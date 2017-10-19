@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <resources>
+  <style name="Theme.MyCustomTheme" parent="Theme.AppCompat.NoActionBar">
+  </style>
   <style name="Theme.MyTheme" parent="Theme.MyTheme.Base">
   </style>
   <!-- Base theme applied no matter what API -->
