@@ -99,6 +99,7 @@
     <Compile Include="Activities\ActivityRider.cs" />
     <Compile Include="Activities\ActivityYourLocation.cs" />
     <Compile Include="Activities\MainActivity.cs" />
+    <Compile Include="Models\Request.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

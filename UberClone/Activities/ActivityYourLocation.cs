@@ -15,6 +15,8 @@ using Android.Locations;
 using Android.Support.V7.App;
 using Android.Support.V4.App;
 
+using UberClone.Models;
+
 namespace UberClone.Activities
 {
 
@@ -74,28 +76,82 @@ namespace UberClone.Activities
        public LocationManager locationmanager;
       public  string provider;
        public Location location;
+
+        Button requestuber;
+        TextView tvinfo;
+
+        bool requestactive = false;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.Layout_ActivityYourLocation);
             SetUpMapIfNeeded();
-
-            //Setting Up Location Listener (LocationManager)
             locationmanager = (LocationManager)GetSystemService(Context.LocationService);
-            // Provider(Where We're Getting The Location)
             provider = locationmanager.GetBestProvider(new Criteria(), false);
             locationmanager.RequestLocationUpdates(provider, 400, 1, this);
             location = locationmanager.GetLastKnownLocation(provider);
-             
             if (location != null & mMap!=null)
             {
-                //Get User Location & Add A Marker In Map
-                mMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(new LatLng(location.Latitude, location.Longitude), 10));
-                mMap.AddMarker(new MarkerOptions().SetPosition(new LatLng(location.Latitude, location.Longitude)).SetTitle("My Location"));
+                mMap.Clear();
+                mMap.UiSettings.ZoomControlsEnabled = true;
+                LatLng latlng = new LatLng(location.Latitude, location.Longitude);
+                CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(latlng, 15);
+                mMap.MoveCamera(camera);
+                MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
+                mMap.AddMarker(options);
+            }
+
+
+            requestuber = FindViewById<Button>(Resource.Id.button_requestuber);
+            requestuber.Click += Requestuber_Click;
+            tvinfo = FindViewById<TextView>(Resource.Id.textviewinfo);
+        }
+
+        private void Requestuber_Click(object sender, EventArgs e)
+        {
+            if (!requestactive)
+            {
+                Android.Util.Log.Info("My App", "Uber Requested");
+                tvinfo.Text = "Finding UberDriver...";
+                requestuber.Text = "Cancel Uber";
+                requestactive = true;
+                /*creating classes in parser + create user with each requestuberclick*/
+                //ParseObject request = new ParseObject("Requests");
+
+                //request.put("requesterUsername", ParseUser.getCurrentUser().getUsername());
+
+                //ParseACL parseACL = new ParseACL();
+                //parseACL.setPublicWriteAccess(true);
+                //parseACL.setPublicReadAccess(true);
+                //request.setACL(parseACL);
+                //    request.saveInBackground(new SaveCallback() {
+                //        @Override
+                //        public void done(ParseException e)
+                //    {
+
+                //        if (e == null)
+                //        {
+
+                //            infoTextView.setText("Finding Uber driver...");
+                //            requestUberButton.setText("Cancel Uber");
+                //            requestActive = true;
+
+                //        }
+
+                //    }
+                //});
+            }
+            else
+            {
+                Android.Util.Log.Info("My App", "Uber Cancelled");
+                tvinfo.Text = "";
+                requestuber.Text = "Request Uber";
+                requestactive = false;
             }
 
 
         }
+
         protected override void OnResume()
         {
             base.OnResume();
@@ -116,24 +172,33 @@ namespace UberClone.Activities
 
         public void OnLocationChanged(Location location)
         {
-            mMap.Clear();
-            mMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(new LatLng(location.Latitude, location.Longitude), 10));
-            mMap.AddMarker(new MarkerOptions().SetPosition(new LatLng(location.Latitude, location.Longitude)).SetTitle("My Location"));
+            if (location != null & mMap != null)
+            {
+                mMap.Clear();
+                //mMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(new LatLng(location.Latitude, location.Longitude), 10));
+                //mMap.AddMarker(new MarkerOptions().SetPosition(new LatLng(location.Latitude, location.Longitude)).SetTitle("My Location"));
+                mMap.UiSettings.ZoomControlsEnabled = true;
+                LatLng latlng = new LatLng(location.Latitude, location.Longitude);
+                CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(latlng, 15);
+                mMap.MoveCamera(camera);
+                MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
+                mMap.AddMarker(options);
+            }
         }
 
         public void OnProviderDisabled(string provider)
         {
-            throw new NotImplementedException();
+            Toast.MakeText(this, "ProviderDisabled", ToastLength.Long).Show();
         }
 
         public void OnProviderEnabled(string provider)
         {
-            throw new NotImplementedException();
+            Toast.MakeText(this, "ProviderEnabled", ToastLength.Long).Show();
         }
 
         public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
         {
-            throw new NotImplementedException();
+            Toast.MakeText(this, "StatusChanged", ToastLength.Long).Show();
         }
 
         public void OnMapReady(GoogleMap googleMap)

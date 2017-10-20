@@ -1997,6 +1997,9 @@ namespace UberClone
 			// aapt resource value: 0x7f0b0066
 			public const int button_getstarted = 2131427430;
 			
+			// aapt resource value: 0x7f0b0062
+			public const int button_requestuber = 2131427426;
+			
 			// aapt resource value: 0x7f0b006b
 			public const int cancel_action = 2131427435;
 			
@@ -2078,9 +2081,6 @@ namespace UberClone
 			// aapt resource value: 0x7f0b0074
 			public const int info = 2131427444;
 			
-			// aapt resource value: 0x7f0b0063
-			public const int infoTextView = 2131427427;
-			
 			// aapt resource value: 0x7f0b0015
 			public const int light = 2131427349;
 			
@@ -2134,9 +2134,6 @@ namespace UberClone
 			
 			// aapt resource value: 0x7f0b004b
 			public const int radio = 2131427403;
-			
-			// aapt resource value: 0x7f0b0062
-			public const int requestUber = 2131427426;
 			
 			// aapt resource value: 0x7f0b0075
 			public const int right_icon = 2131427445;
@@ -2251,6 +2248,9 @@ namespace UberClone
 			
 			// aapt resource value: 0x7f0b003f
 			public const int textSpacerNoTitle = 2131427391;
+			
+			// aapt resource value: 0x7f0b0063
+			public const int textviewinfo = 2131427427;
 			
 			// aapt resource value: 0x7f0b0072
 			public const int time = 2131427442;

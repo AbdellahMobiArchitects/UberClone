@@ -16,21 +16,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Request Uber"
-        android:id="@+id/requestUber"
+        android:id="@+id/button_requestuber"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="20dp"
-        android:layout_marginRight="20dp"
-        android:onClick="requestUber" />
+        android:layout_marginRight="20dp" />
 
   <TextView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:id="@+id/infoTextView"
+      android:id="@+id/textviewinfo"
       android:layout_alignParentBottom="true"
       android:layout_alignParentLeft="true" android:layout_alignParentStart="true"
       android:layout_marginBottom="30dp"
       android:layout_marginLeft="10dp"
-      android:textColor="#2c2c2c" />
+      android:textColor="#2c2c2c"/>
 </RelativeLayout>
