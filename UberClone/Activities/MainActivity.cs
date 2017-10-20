@@ -39,7 +39,7 @@ namespace UberClone.Activities
             if (switch_usertype.Checked)
             {
                 RiderOrDriver = switch_usertype.TextOn;
-                RedirectUser(typeof(ActivityYourLocation));
+                RedirectUser(typeof(ActivityViewRequests));
                 Toast.MakeText(this, "Welcome "+RiderOrDriver, ToastLength.Short).Show();
                 
             }

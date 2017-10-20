@@ -14,8 +14,8 @@ using Android.Gms.Maps.Model;
 using Android.Locations;
 using Android.Support.V7.App;
 using Android.Support.V4.App;
+using Newtonsoft.Json;
 
-using UberClone.Models;
 
 namespace UberClone.Activities
 {
@@ -90,17 +90,6 @@ namespace UberClone.Activities
             provider = locationmanager.GetBestProvider(new Criteria(), false);
             locationmanager.RequestLocationUpdates(provider, 400, 1, this);
             location = locationmanager.GetLastKnownLocation(provider);
-            if (location != null & mMap!=null)
-            {
-                mMap.Clear();
-                mMap.UiSettings.ZoomControlsEnabled = true;
-                LatLng latlng = new LatLng(location.Latitude, location.Longitude);
-                CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(latlng, 15);
-                mMap.MoveCamera(camera);
-                MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
-                mMap.AddMarker(options);
-            }
-
 
             requestuber = FindViewById<Button>(Resource.Id.button_requestuber);
             requestuber.Click += Requestuber_Click;
@@ -116,30 +105,6 @@ namespace UberClone.Activities
                 requestuber.Text = "Cancel Uber";
                 requestactive = true;
                 /*creating classes in parser + create user with each requestuberclick*/
-                //ParseObject request = new ParseObject("Requests");
-
-                //request.put("requesterUsername", ParseUser.getCurrentUser().getUsername());
-
-                //ParseACL parseACL = new ParseACL();
-                //parseACL.setPublicWriteAccess(true);
-                //parseACL.setPublicReadAccess(true);
-                //request.setACL(parseACL);
-                //    request.saveInBackground(new SaveCallback() {
-                //        @Override
-                //        public void done(ParseException e)
-                //    {
-
-                //        if (e == null)
-                //        {
-
-                //            infoTextView.setText("Finding Uber driver...");
-                //            requestUberButton.setText("Cancel Uber");
-                //            requestActive = true;
-
-                //        }
-
-                //    }
-                //});
             }
             else
             {
@@ -152,12 +117,7 @@ namespace UberClone.Activities
 
         }
 
-        protected override void OnResume()
-        {
-            base.OnResume();
-            SetUpMapIfNeeded();
-            locationmanager.RequestLocationUpdates(provider, 400, 1, this);
-        }
+ 
 
 
         private void SetUpMapIfNeeded()
@@ -174,15 +134,18 @@ namespace UberClone.Activities
         {
             if (location != null & mMap != null)
             {
-                mMap.Clear();
+               
+                locationmanager.RequestLocationUpdates(provider, 400, 1, this);
                 //mMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(new LatLng(location.Latitude, location.Longitude), 10));
                 //mMap.AddMarker(new MarkerOptions().SetPosition(new LatLng(location.Latitude, location.Longitude)).SetTitle("My Location"));
-                mMap.UiSettings.ZoomControlsEnabled = true;
-                LatLng latlng = new LatLng(location.Latitude, location.Longitude);
-                CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(latlng, 15);
-                mMap.MoveCamera(camera);
-                MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
-                mMap.AddMarker(options);
+
+                //mMap.Clear();
+                //mMap.UiSettings.ZoomControlsEnabled = true;
+                //LatLng latlng = new LatLng(location.Latitude, location.Longitude);
+                //CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(latlng, 5);
+                //mMap.MoveCamera(camera);
+                //MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
+                //mMap.AddMarker(options);
             }
         }
 
@@ -205,12 +168,36 @@ namespace UberClone.Activities
         {
             this.mMap = googleMap;
 
+            RefreshMap();
+
+        }
+
+        private void RefreshMap()
+        {
+            if (location != null & mMap != null)
+            {
+                mMap.Clear();
+                locationmanager.RequestLocationUpdates(provider, 400, 1, this);
+                mMap.UiSettings.ZoomControlsEnabled = true;
+                LatLng latlng = new LatLng(location.Latitude, location.Longitude);
+                CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(latlng, 5);
+                mMap.MoveCamera(camera);
+                MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
+                mMap.AddMarker(options);
+            }
         }
 
         protected override void OnPause()
         {
             base.OnPause();
             locationmanager.RemoveUpdates(this);
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
+            SetUpMapIfNeeded();
+            locationmanager.RequestLocationUpdates(provider, 400, 1, this);
         }
     }
 }

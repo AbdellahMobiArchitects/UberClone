@@ -12,9 +12,12 @@ using Android.Widget;
 
 namespace UberClone.Models
 {
-    class Request
+    public class Request
     {
-        public string requester_username { get; set; }
-        public string driver_username { get; set; }
+        public int Requestid { get; set; }
+        public string Requester_username { get; set; }
+        public string Driver_username { get; set; }
+        public int Requester_lat { get; set; }
+        public int Requester_long { get; set; }
     }
 }
