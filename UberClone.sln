@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UberClone", "UberClone\Uber
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UberClone.Web", "UberClone.Web\UberClone.Web.csproj", "{D0983D3E-5935-40A7-AA06-15C09D6C304B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "handlertest", "handlertest\handlertest.csproj", "{B786ED27-9BDD-46A4-8313-F8F6E140D330}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,12 @@ Global
 		{D0983D3E-5935-40A7-AA06-15C09D6C304B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0983D3E-5935-40A7-AA06-15C09D6C304B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0983D3E-5935-40A7-AA06-15C09D6C304B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B786ED27-9BDD-46A4-8313-F8F6E140D330}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B786ED27-9BDD-46A4-8313-F8F6E140D330}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B786ED27-9BDD-46A4-8313-F8F6E140D330}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{B786ED27-9BDD-46A4-8313-F8F6E140D330}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B786ED27-9BDD-46A4-8313-F8F6E140D330}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B786ED27-9BDD-46A4-8313-F8F6E140D330}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
