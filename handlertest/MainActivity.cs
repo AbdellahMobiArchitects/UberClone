@@ -15,27 +15,20 @@ namespace handlertest
     [Activity(Label = "@string/app_name", MainLauncher = true, LaunchMode = Android.Content.PM.LaunchMode.SingleTop, Icon = "@drawable/icon")]
     public class MainActivity : AppCompatActivity
     {
-        static Context thisActivity = null;
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
 
             //Set your main view here
             SetContentView(Resource.Layout.main);
-            thisActivity = this;
+           // Hello();
+            
 
         }
 
-        public Runnable Hellorunner = new Runnable(() =>
-          {
-              Handler handler = new Handler();
-              handler.PostDelayed(hello, 5000);
-          });
+       
 
-        private static void hello()
-        {
-            Toast.MakeText(thisActivity, "message", ToastLength.Long).Show();
-        }
+      
     }
 
 }
