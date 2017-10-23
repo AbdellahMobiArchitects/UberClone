@@ -17,7 +17,7 @@ namespace UberClone.Models
         public int Requestid { get; set; }
         public string Requester_username { get; set; }
         public string Driver_username { get; set; }
-        public int Requester_lat { get; set; }
-        public int Requester_long { get; set; }
+        public double Requester_lat { get; set; }
+        public double Requester_long { get; set; }
     }
 }

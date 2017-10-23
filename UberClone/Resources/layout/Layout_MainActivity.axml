@@ -1,14 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:local="http://schemas.android.com/apk/res-auto" android:layout_width="fill_parent" android:layout_height="fill_parent" android:orientation="vertical" android:gravity="center">
-  <ImageView android:id="@+id/imageview_logo" android:layout_width="match_parent" android:layout_height="100dp" android:layout_marginTop="50dp" android:src="@drawable/image_logo" android:scaleType="fitXY" />
-  <LinearLayout android:layout_marginTop="25dp" android:gravity="center" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-    <TextView android:layout_width="wrap_content" android:layout_height="match_parent" android:text="Rider" />
-    <Switch android:id="@+id/switch_usertype" android:layout_width="wrap_content" android:layout_height="wrap_content"  android:textOn="Driver" android:textOff="Rider" />
-    <TextView android:layout_width="wrap_content" android:layout_height="match_parent" android:text="Driver" />
-  </LinearLayout>
-  <Button android:id="@+id/button_getstarted"
-    android:layout_height="wrap_content"
-          android:layout_width="wrap_content"
-          android:layout_marginTop="25dp"
-          android:text="Get Started"/>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+    <ImageView
+        android:id="@+id/imageview_logo"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="50dp"
+        android:src="@drawable/image_logo"
+        android:scaleType="fitXY" />
+    <LinearLayout
+        android:layout_marginTop="25dp"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Rider" />
+        <Switch
+            android:id="@+id/switch_usertype"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textOn="driver"
+            android:textOff="rider" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Driver" />
+    </LinearLayout>
+    <Button
+        android:id="@+id/button_getstarted"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="Get Started" />
 </LinearLayout>

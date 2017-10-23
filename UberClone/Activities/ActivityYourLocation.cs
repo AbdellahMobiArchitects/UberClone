@@ -72,29 +72,80 @@ namespace UberClone.Activities
     public class ActivityYourLocation : FragmentActivity, ILocationListener ,IOnMapReadyCallback
     {
         
-        private GoogleMap mMap; //Null if google apk services isn't available...
-       public LocationManager locationmanager;
-      public  string provider;
-       public Location location;
+         private GoogleMap mMap; //Null if google apk services isn't available...
+         public LocationManager locationmanager;
+         public  string provider;
+         public Location location;
 
-        Button requestuber;
-        TextView tvinfo;
+         Button requestuber;
+         TextView tvinfo;
 
-        bool requestactive = false;
-        protected override void OnCreate(Bundle savedInstanceState)
+         bool requestactive = false;
+         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.Layout_ActivityYourLocation);
             SetUpMapIfNeeded();
-            locationmanager = (LocationManager)GetSystemService(Context.LocationService);
-            provider = locationmanager.GetBestProvider(new Criteria(), false);
-            locationmanager.RequestLocationUpdates(provider, 400, 1, this);
-            location = locationmanager.GetLastKnownLocation(provider);
-
             requestuber = FindViewById<Button>(Resource.Id.button_requestuber);
             requestuber.Click += Requestuber_Click;
             tvinfo = FindViewById<TextView>(Resource.Id.textviewinfo);
         }
+        private void SetUpMapIfNeeded()
+        {
+            // Do a null check to confirm that we have not already instantiated the map.
+            if (mMap == null)
+            {
+                var frag = (SupportFragmentManager.FindFragmentById(Resource.Id.fragment_googlemap) as SupportMapFragment);
+                frag.GetMapAsync(this);
+
+            }
+        }
+        public void OnMapReady(GoogleMap googleMap)
+        {
+            this.mMap = googleMap;
+            locationmanager = (LocationManager)GetSystemService(Context.LocationService);
+            provider = locationmanager.GetBestProvider(new Criteria(), false);
+            locationmanager.RequestLocationUpdates(provider, 400, 1, this);
+            location = locationmanager.GetLastKnownLocation(provider);
+            Toast.MakeText(this, "Map Ready", ToastLength.Short).Show();
+
+            UpdateLocation();
+        }
+        private void UpdateLocation()
+        {
+                mMap.Clear();
+                var newloc= locationmanager.GetLastKnownLocation(provider);
+                LatLng latlng = new LatLng(newloc.Latitude, newloc.Longitude);
+                MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
+                mMap.AddMarker(options);
+                CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(latlng, 5);
+                mMap.MoveCamera(camera);
+        }
+       
+
+        public void OnLocationChanged(Location location)
+        {
+            Toast.MakeText(this, "Location Changed", ToastLength.Long).Show();
+            UpdateLocation();
+            
+        }
+
+        public void OnProviderDisabled(string provider)
+        {
+            Toast.MakeText(this, "Provider Disabled", ToastLength.Long).Show();
+        }
+
+        public void OnProviderEnabled(string provider)
+        {
+            Toast.MakeText(this, "Provider Enabled", ToastLength.Long).Show();
+        }
+
+        public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
+        {
+            Toast.MakeText(this, "Status Changed", ToastLength.Long).Show();
+        }
+
+       
 
         private void Requestuber_Click(object sender, EventArgs e)
         {
@@ -117,87 +168,14 @@ namespace UberClone.Activities
 
         }
 
- 
-
-
-        private void SetUpMapIfNeeded()
-        {
-            // Do a null check to confirm that we have not already instantiated the map.
-            if (mMap == null)
-            {
-                (SupportFragmentManager.FindFragmentById(Resource.Id.fragment_googlemap) as SupportMapFragment).GetMapAsync(this);
-   
-            }
-        }
-
-        public void OnLocationChanged(Location location)
-        {
-            if (location != null & mMap != null)
-            {
-               
-                locationmanager.RequestLocationUpdates(provider, 400, 1, this);
-                //mMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(new LatLng(location.Latitude, location.Longitude), 10));
-                //mMap.AddMarker(new MarkerOptions().SetPosition(new LatLng(location.Latitude, location.Longitude)).SetTitle("My Location"));
-
-                //mMap.Clear();
-                //mMap.UiSettings.ZoomControlsEnabled = true;
-                //LatLng latlng = new LatLng(location.Latitude, location.Longitude);
-                //CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(latlng, 5);
-                //mMap.MoveCamera(camera);
-                //MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
-                //mMap.AddMarker(options);
-            }
-        }
-
-        public void OnProviderDisabled(string provider)
-        {
-            Toast.MakeText(this, "ProviderDisabled", ToastLength.Long).Show();
-        }
-
-        public void OnProviderEnabled(string provider)
-        {
-            Toast.MakeText(this, "ProviderEnabled", ToastLength.Long).Show();
-        }
-
-        public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
-        {
-            Toast.MakeText(this, "StatusChanged", ToastLength.Long).Show();
-        }
-
-        public void OnMapReady(GoogleMap googleMap)
-        {
-            this.mMap = googleMap;
-
-            RefreshMap();
-
-        }
-
-        private void RefreshMap()
-        {
-            if (location != null & mMap != null)
-            {
-                mMap.Clear();
-                locationmanager.RequestLocationUpdates(provider, 400, 1, this);
-                mMap.UiSettings.ZoomControlsEnabled = true;
-                LatLng latlng = new LatLng(location.Latitude, location.Longitude);
-                CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(latlng, 5);
-                mMap.MoveCamera(camera);
-                MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
-                mMap.AddMarker(options);
-            }
-        }
-
         protected override void OnPause()
         {
             base.OnPause();
-            locationmanager.RemoveUpdates(this);
         }
 
         protected override void OnResume()
         {
             base.OnResume();
-            SetUpMapIfNeeded();
-            locationmanager.RequestLocationUpdates(provider, 400, 1, this);
         }
     }
 }

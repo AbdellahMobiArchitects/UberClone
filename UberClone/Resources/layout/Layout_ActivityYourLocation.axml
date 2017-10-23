@@ -4,15 +4,14 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-  <fragment
-    android:name="com.google.android.gms.maps.SupportMapFragment"
-     android:layout_width="match_parent"
-     android:layout_height="match_parent"
-     android:id="@+id/fragment_googlemap"
-    android:background="#ffffff"
-    android:padding="0dp"/>
-
-  <Button
+    <fragment
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/fragment_googlemap"
+        android:background="#ffffff"
+        android:padding="0dp" />
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Request Uber"
@@ -22,14 +21,14 @@
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="20dp"
         android:layout_marginRight="20dp" />
-
-  <TextView
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:id="@+id/textviewinfo"
-      android:layout_alignParentBottom="true"
-      android:layout_alignParentLeft="true" android:layout_alignParentStart="true"
-      android:layout_marginBottom="30dp"
-      android:layout_marginLeft="10dp"
-      android:textColor="#2c2c2c"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textviewinfo"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="30dp"
+        android:layout_marginLeft="10dp"
+        android:textColor="#2c2c2c" />
 </RelativeLayout>

@@ -17,7 +17,7 @@ namespace UberClone.Models
         public int User_id { get; set; }
         public string Username { get; set; }
         public string Usertype { get; set; }
-        public int User_long { get; set; }
-        public int User_Lat { get; set; }
+        public double User_long { get; set; }
+        public double User_Lat { get; set; }
     }
 }
