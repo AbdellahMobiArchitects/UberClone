@@ -1,0 +1,57 @@
+﻿@model IEnumerable<UberClone.Web.Models.Requests>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.request_id)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.requester_username)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.requester_longitude)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.requester_latitude)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.driver_usename)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.request_id)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.requester_username)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.requester_longitude)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.requester_latitude)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.driver_usename)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.request_id }) |
+            @Html.ActionLink("Details", "Details", new { id=item.request_id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.request_id })
+        </td>
+    </tr>
+}
+
+</table>

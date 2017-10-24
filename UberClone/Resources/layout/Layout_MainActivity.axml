@@ -18,20 +18,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Rider" />
         <Switch
             android:id="@+id/switch_usertype"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:showText="true"
             android:textOn="driver"
             android:textOff="rider" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Driver" />
     </LinearLayout>
     <Button
         android:id="@+id/button_getstarted"

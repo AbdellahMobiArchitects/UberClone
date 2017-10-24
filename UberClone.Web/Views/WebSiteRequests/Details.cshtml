@@ -1,0 +1,50 @@
+﻿@model UberClone.Web.Models.Requests
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Requests</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.requester_username)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.requester_username)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.requester_longitude)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.requester_longitude)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.requester_latitude)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.requester_latitude)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.driver_usename)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.driver_usename)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.request_id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

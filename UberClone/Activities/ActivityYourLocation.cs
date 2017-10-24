@@ -76,7 +76,7 @@ namespace UberClone.Activities
          public LocationManager locationmanager;
          public  string provider;
          public Location location;
-
+        CameraUpdate camera;
          Button requestuber;
          TextView tvinfo;
 
@@ -118,8 +118,12 @@ namespace UberClone.Activities
                 LatLng latlng = new LatLng(newloc.Latitude, newloc.Longitude);
                 MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
                 mMap.AddMarker(options);
-                CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(latlng, 5);
-                mMap.MoveCamera(camera);
+            if (camera == null)
+            {
+                camera = CameraUpdateFactory.NewLatLngZoom(latlng, 15);
+            }
+            camera = CameraUpdateFactory.NewLatLng(latlng);
+            mMap.MoveCamera(camera);
         }
        
 

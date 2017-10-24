@@ -189,6 +189,8 @@
     <Compile Include="Controllers\RequestsController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
+    <Compile Include="Controllers\WebSiteRequestsController.cs" />
+    <Compile Include="Controllers\WebSiteUsersController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -285,6 +287,16 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\WebSiteRequests\Create.cshtml" />
+    <Content Include="Views\WebSiteRequests\Delete.cshtml" />
+    <Content Include="Views\WebSiteRequests\Details.cshtml" />
+    <Content Include="Views\WebSiteRequests\Edit.cshtml" />
+    <Content Include="Views\WebSiteRequests\Index.cshtml" />
+    <Content Include="Views\WebSiteUsers\Create.cshtml" />
+    <Content Include="Views\WebSiteUsers\Delete.cshtml" />
+    <Content Include="Views\WebSiteUsers\Details.cshtml" />
+    <Content Include="Views\WebSiteUsers\Edit.cshtml" />
+    <Content Include="Views\WebSiteUsers\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -304,12 +316,6 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\UberClone\UberClone.csproj">
-      <Project>{4D4FA695-ADDC-44E2-996A-1AD42326E6F2}</Project>
-      <Name>UberClone</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
