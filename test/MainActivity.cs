@@ -20,15 +20,19 @@ namespace test
 
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
-            act = new Action(Hello);
-            handler.PostDelayed(new Runnable(act), 0);
+            TotoHandler();
             
 
            
         }
-        void Hello()
+
+        private void TotoHandler()
         {
-                if (i==4)
+            act = new Action(Hello);
+            handler.PostDelayed(new Runnable(act), 0);
+            void Hello()
+            {
+                if (i == 4)
                 {
                     name = "foobar";
                 }
@@ -36,7 +40,10 @@ namespace test
                 i++;
                 handler.PostDelayed(act, 5000);
 
+            }
         }
+
+       
     }
 }
 

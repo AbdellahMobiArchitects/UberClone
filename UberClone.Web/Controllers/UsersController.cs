@@ -15,42 +15,43 @@ namespace UberClone.Web.Controllers
 {
     public class UsersController : ApiController
     {
-        private UberCloneWebContext db = new UberCloneWebContext();
+        private dbcontext db = new dbcontext();
 
         // GET: api/Users
-        public IQueryable<User> GetUsers()
+        public IQueryable<Users> GetUsers()
         {
             return db.Users;
         }
 
         // GET: api/Users/5
-        [ResponseType(typeof(User))]
-        public async Task<IHttpActionResult> GetUser(int id)
+        [ResponseType(typeof(Users))]
+        public async Task<IHttpActionResult> GetUsers(int id)
         {
-            User user = await db.Users.FindAsync(id);
-            if (user == null)
+            Users users = await db.Users.FindAsync(id);
+            if (users == null)
             {
                 return NotFound();
             }
 
-            return Ok(user);
+            return Ok(users);
         }
 
         // PUT: api/Users/5
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutUser(int id, User user)
+        [AcceptVerbs("POST","PUT")]
+        public async Task<IHttpActionResult> PutUsers(int id, Users users)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != user.User_id)
+            if (id != users.user_id)
             {
                 return BadRequest();
             }
 
-            db.Entry(user).State = EntityState.Modified;
+            db.Entry(users).State = EntityState.Modified;
 
             try
             {
@@ -58,7 +59,7 @@ namespace UberClone.Web.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserExists(id))
+                if (!UsersExists(id))
                 {
                     return NotFound();
                 }
@@ -72,34 +73,34 @@ namespace UberClone.Web.Controllers
         }
 
         // POST: api/Users
-        [ResponseType(typeof(User))]
-        public async Task<IHttpActionResult> PostUser(User user)
+        [ResponseType(typeof(Users))]
+        public async Task<IHttpActionResult> PostUsers(Users users)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            db.Users.Add(user);
+            db.Users.Add(users);
             await db.SaveChangesAsync();
 
-            return CreatedAtRoute("DefaultApi", new { id = user.User_id }, user);
+            return CreatedAtRoute("DefaultApi", new { id = users.user_id }, users);
         }
 
         // DELETE: api/Users/5
-        [ResponseType(typeof(User))]
-        public async Task<IHttpActionResult> DeleteUser(int id)
+        [ResponseType(typeof(Users))]
+        public async Task<IHttpActionResult> DeleteUsers(int id)
         {
-            User user = await db.Users.FindAsync(id);
-            if (user == null)
+            Users users = await db.Users.FindAsync(id);
+            if (users == null)
             {
                 return NotFound();
             }
 
-            db.Users.Remove(user);
+            db.Users.Remove(users);
             await db.SaveChangesAsync();
 
-            return Ok(user);
+            return Ok(users);
         }
 
         protected override void Dispose(bool disposing)
@@ -111,9 +112,9 @@ namespace UberClone.Web.Controllers
             base.Dispose(disposing);
         }
 
-        private bool UserExists(int id)
+        private bool UsersExists(int id)
         {
-            return db.Users.Count(e => e.User_id == id) > 0;
+            return db.Users.Count(e => e.user_id == id) > 0;
         }
     }
 }
