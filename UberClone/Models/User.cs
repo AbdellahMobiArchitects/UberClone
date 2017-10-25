@@ -14,10 +14,21 @@ namespace UberClone.Models
 {
     public class User
     {
-        public int User_id { get; set; }
-        public string Username { get; set; }
-        public string Usertype { get; set; }
-        public double User_long { get; set; }
-        public double User_Lat { get; set; }
+        public int user_id { get; set; }
+        public string username { get; set; }
+        public string usertype { get; set; }
+        public Nullable<double> user_longitude { get; set; }
+        public Nullable<double> user_latitude { get; set; }
+
+        public override string ToString()
+        {
+            return (
+                "User ID" + user_id +
+                "Username" + username +
+                "Usertype" + usertype +
+                "User Longitude" + user_longitude +
+                "User Latitude" + user_latitude
+                );
+        }
     }
 }

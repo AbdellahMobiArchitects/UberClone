@@ -1,16 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <fragment
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/fragment_googlemap"
-        android:background="#ffffff"
-        android:padding="0dp" />
+        android:id="@+id/fragment_googlemap" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+"
+        android:id="@+id/button_zoomin"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="100.0dp"
+        android:layout_marginRight="5.0dp" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="-"
+        android:id="@+id/button_zoomout"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="55.5dp"
+        android:layout_marginRight="5.0dp" />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -19,8 +36,10 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginBottom="20dp"
-        android:layout_marginRight="20dp" />
+        android:layout_marginBottom="10.0dp"
+        android:layout_marginRight="5.0dp"
+        android:layout_marginLeft="0.0dp"
+        android:layout_alignRight="@id/button_zoomin" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -117,6 +117,10 @@
     <Compile Include="Activities\ActivityViewRequests.cs" />
     <Compile Include="Activities\MainActivity.cs" />
     <Compile Include="AppUrls.cs" />
+    <Compile Include="Helpers\GeoDistanceHelper.cs" />
+    <Compile Include="Helpers\Handler.cs" />
+    <Compile Include="Helpers\restenum.cs" />
+    <Compile Include="Helpers\RestRequestType.cs" />
     <Compile Include="Helpers\Settings.cs" />
     <Compile Include="Models\Request.cs" />
     <Compile Include="Models\User.cs" />

@@ -11,13 +11,19 @@ namespace UberClone.Web.Models
 {
     using System;
     using System.Collections.Generic;
-    
+    using System.ComponentModel.DataAnnotations;
+
     public partial class Users
     {
+        [Display(Name = "User ID")]
         public int user_id { get; set; }
+        [Display(Name = "Username")]
         public string username { get; set; }
+        [Display(Name = "UserType")]
         public string usertype { get; set; }
+        [Display(Name = "User Longitude")]
         public Nullable<double> user_longitude { get; set; }
+        [Display(Name = "User Latitude")]
         public Nullable<double> user_latitude { get; set; }
     }
 }
