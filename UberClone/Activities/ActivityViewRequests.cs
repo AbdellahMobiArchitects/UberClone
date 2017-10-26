@@ -32,7 +32,7 @@ namespace UberClone.Activities
         List<string> list_requests = new List<string>();
         Button button_request;
         
-        protected override async void OnCreate(Bundle savedInstanceState)
+        protected override void OnCreate(Bundle savedInstanceState)
         {
             try
             {
@@ -41,52 +41,52 @@ namespace UberClone.Activities
                 
                 //setting up variables + events
                 lvrequests = FindViewById<ListView>(Resource.Id.listview_requests);
-               // button_request = FindViewById<Button>(Resource.Id.button_request);
+                button_request = FindViewById<Button>(Resource.Id.button_request);
 
-               // button_request.Click += button_request_Click;
+                button_request.Click += button_request_Click;
 
                 //setting up location stuff
                 locationmanager = (LocationManager)GetSystemService(Context.LocationService);
                 provider = locationmanager.GetBestProvider(new Criteria(), false);
                 locationmanager.RequestLocationUpdates(provider, 400, 1, this);
-                UpdateLocation();
 
 
                 //code
-                var requests = await RestRequestType.GetRequest<List<Request>>(AppUrls.api_url_requests, HttpVerbs.GET, null, null);
-                if (requests.Count>0)
-                {
-                    list_requests.Clear();
-                    foreach (var i in requests)
-                    {
-                        if (string.IsNullOrEmpty(i.driver_usename))
-                        {
-                            var distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, i.requester_longitude, i.requester_latitude);
-                            list_requests.Add(distanceinkm.ToString()+" Km");
-                        }
-                    }
-                   var ListAdapter = new ArrayAdapter<String>(this, Android.Resource.Layout.SimpleListItem1, list_requests);
-                    lvrequests.Adapter = ListAdapter;
-                }
-                else
-                {
-                    Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                    Android.App.AlertDialog alert = dialog.Create();
-                    alert.SetTitle("Information!");
-                    alert.SetMessage("No Requests");
-                    alert.SetIcon(Resource.Drawable.alert);
-                    alert.SetButton("OK", (c, ev) =>
-                    {
+                //var requests = await RestRequestType.GetRequest<List<Request>>(AppUrls.api_url_requests, HttpVerbs.GET, null, null);
+                //if (requests.Count>0)
+                //{
+                //    list_requests.Clear();
+                //    foreach (var i in requests)
+                //    {
+                //        if (string.IsNullOrEmpty(i.driver_usename))
+                //        {
+                //            var distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, i.requester_longitude, i.requester_latitude);
+                //            list_requests.Add(distanceinkm.ToString()+" Km");
+                //        }
+                //    }
+                //    Android.Util.Log.Info("UberCloneApp.ListRequests", list_requests.ToString());
+                    //var ListAdapter = new ArrayAdapter<String>(this, Android.Resource.Layout.SimpleListItem1, list_requests);
+                    //  lvrequests.Adapter = ListAdapter;
+                //}
+                //else
+                //{
+                //    Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+                //    Android.App.AlertDialog alert = dialog.Create();
+                //    alert.SetTitle("Information!");
+                //    alert.SetMessage("No Requests");
+                //    alert.SetIcon(Resource.Drawable.alert);
+                //    alert.SetButton("OK", (c, ev) =>
+                //    {
 
-                    });
-                    alert.Show();
-                }
+                //    });
+                //    alert.Show();
+                //}
                 
 
             }
             catch (Exception e)
             {
-                Android.Util.Log.Info("UberCloneApp", e.InnerException.Message);
+                Android.Util.Log.Info("UberCloneApp.ActivityViewRequests.OnCreate", e.InnerException.Message);
             }
            
             

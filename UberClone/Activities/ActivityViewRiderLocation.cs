@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 
@@ -17,38 +18,53 @@ using Android.Gms.Maps.Model;
 namespace UberClone.Activities
 {
     [Activity(Label = "ActivityViewRiderLocation", ScreenOrientation = Android.Content.PM.ScreenOrientation.Portrait, Theme = "@style/Theme.MyCustomTheme")]
-    public class ActivityViewRiderLocation : FragmentActivity, ILocationListener, IOnMapReadyCallback
+    public class ActivityViewRiderLocation : FragmentActivity, ILocationListener, IOnMapReadyCallback, GoogleMap.IOnMapLoadedCallback
     {
         private GoogleMap mMap; //Null if google apk services isn't available...
         public LocationManager locationmanager;
         public string provider;
         public Location location;
+        CameraUpdate drivercamera;
 
         Button acceptrequest, buttonback;
 
-        double longitude, latitude;
-        string username;
+        double riderlongitude, riderlatitude;
+        string riderusername;
+
+        List<Marker> markers = new List<Marker>();
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            SetContentView(Resource.Layout.Layout_ActivityViewRiderLocation);
-            buttonback = FindViewById<Button>(Resource.Id.button_back);
-            acceptrequest = FindViewById<Button>(Resource.Id.button_acceptrequest);
+            try
+            {
+                SetContentView(Resource.Layout.Layout_ActivityViewRiderLocation);
+                buttonback = FindViewById<Button>(Resource.Id.button_back);
+                acceptrequest = FindViewById<Button>(Resource.Id.button_acceptrequest);
 
-            username = Intent.GetStringExtra("username");
-            latitude = Intent.GetDoubleExtra("latitude", 0);
-            longitude = Intent.GetDoubleExtra("longitude", 0);
+                riderusername = Intent.GetStringExtra("username");
+                riderlatitude = Intent.GetDoubleExtra("latitude", 0);
+                riderlongitude = Intent.GetDoubleExtra("longitude", 0);
 
-            SetUpMapIfNeeded();
-            locationmanager = (LocationManager)GetSystemService(Context.LocationService);
-            provider = locationmanager.GetBestProvider(new Criteria(), false);
-            locationmanager.RequestLocationUpdates(provider, 400, 1, this);
-            location = locationmanager.GetLastKnownLocation(provider);
+                SetUpMapIfNeeded();
+                locationmanager = (LocationManager)GetSystemService(Context.LocationService);
+                provider = locationmanager.GetBestProvider(new Criteria(), false);
+                locationmanager.RequestLocationUpdates(provider, 400, 1, this);
+                location = locationmanager.GetLastKnownLocation(provider);
+
+                acceptrequest.Click += Acceptrequest_Click;
+                buttonback.Click += Buttonback_Click;
+            }
+            catch (Exception ex)
+            {
+
+                Android.Util.Log.Info("UberCloneApp.ActivityViewRiderLocation.OnCreate", ex.InnerException.Message);
+            }
 
 
-            acceptrequest.Click += Acceptrequest_Click;
-            buttonback.Click += Buttonback_Click;
+            
         }
 
         private void Buttonback_Click(object sender, EventArgs e)
@@ -61,78 +77,106 @@ namespace UberClone.Activities
         {
                  Intent intent = new Intent(Intent.ActionView,
 
-                Android.Net.Uri.Parse("http://maps.google.com/maps?daddr=" + latitude + "," +  longitude));
+                Android.Net.Uri.Parse("http://maps.google.com/maps?daddr=" + riderlatitude + "," +  riderlongitude));
                 StartActivity(intent);
         }
 
         public void OnLocationChanged(Location location)
         {
-            if (mMap != null)
-            {
-                //mMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(new LatLng(location.Latitude, location.Longitude), 10));
-                //mMap.AddMarker(new MarkerOptions().SetPosition(new LatLng(location.Latitude, location.Longitude)).SetTitle("My Location"));
-                
-                //LatLng riderlatlng = new LatLng(latitude, longitude);
-                //MarkerOptions rideroptions = new MarkerOptions().SetIcon(BitmapDescriptorFactory.DefaultMarker(BitmapDescriptorFactory.HueBlue)).SetPosition(riderlatlng).SetTitle("RiderLocation");
-                //mMap.AddMarker(rideroptions);
-
-                locationmanager.RequestLocationUpdates(provider, 400, 1, this);
-                //mMap.Clear();
-                //mMap.UiSettings.ZoomControlsEnabled = true;
-                //LatLng driverlatlng = new LatLng(location.Latitude, location.Longitude);
-                //MarkerOptions driveroptions = new MarkerOptions().SetPosition(driverlatlng).SetTitle("DriverLocation");
-                //mMap.AddMarker(driveroptions);
-                //CameraUpdate drivercamera = CameraUpdateFactory.NewLatLngZoom(driverlatlng, 20);
-                //mMap.MoveCamera(drivercamera);
-            }
+            UpdateLocation();
+            Android.Util.Log.Info("UberCloneApp.ActivityViewRiderLocation.OnLocationChanged", "Location Changed");
         }
 
         public void OnProviderDisabled(string provider)
         {
-            Toast.MakeText(this, "ProviderDisabled", ToastLength.Long).Show();
+            Android.Util.Log.Info("UberCloneApp.ActivityViewRiderLocation.OnProviderDisabled", "Provider Disabled");
         }
 
         public void OnProviderEnabled(string provider)
         {
-            Toast.MakeText(this, "ProviderEnabled", ToastLength.Long).Show();
+            Android.Util.Log.Info("UberCloneApp.ActivityViewRiderLocation.OnProviderEnabled", "Provider Enabled");
         }
 
         public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
         {
-            Toast.MakeText(this, "StatusChanged", ToastLength.Long).Show();
+            Android.Util.Log.Info("UberCloneApp.ActivityViewRiderLocation.OnStatusChanged", "Status Changed");
         }
 
         public void OnMapReady(GoogleMap googleMap)
         {
             this.mMap = googleMap;
+            locationmanager = (LocationManager)GetSystemService(Context.LocationService);
+            provider = locationmanager.GetBestProvider(new Criteria(), false);
+            locationmanager.RequestLocationUpdates(provider, 400, 1, this);
+            UpdateLocation();
+        }
 
-            if ( mMap != null)
+        private void UpdateLocation()
+        {
+            try
             {
-
-                //mMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(new LatLng(location.Latitude, location.Longitude), 10));
-                //mMap.AddMarker(new MarkerOptions().SetPosition(new LatLng(location.Latitude, location.Longitude)).SetTitle("My Location"));
                 mMap.Clear();
-                LatLng riderlatlng = new LatLng(latitude, longitude);
-                MarkerOptions rideroptions = new MarkerOptions().SetIcon(BitmapDescriptorFactory.DefaultMarker(BitmapDescriptorFactory.HueBlue)).SetPosition(riderlatlng).SetTitle("RiderLocation");
-                mMap.AddMarker(rideroptions);
+                location = locationmanager.GetLastKnownLocation(provider);
 
-                locationmanager.RequestLocationUpdates(provider, 400, 1, this);
-                mMap.UiSettings.ZoomControlsEnabled = true;
+                //driver & rider latlng locs
+                LatLng riderlatlng = new LatLng(riderlatitude, riderlongitude);
                 LatLng driverlatlng = new LatLng(location.Latitude, location.Longitude);
-                MarkerOptions driveroptions = new MarkerOptions().SetPosition(driverlatlng).SetTitle("DriverLocation");
-                mMap.AddMarker(driveroptions);
-                CameraUpdate drivercamera = CameraUpdateFactory.NewLatLngZoom(driverlatlng, 10);
-                mMap.MoveCamera(drivercamera);
+
+                ////rider marker location
+                //MarkerOptions ridermarker = new MarkerOptions()
+                //    .SetIcon(BitmapDescriptorFactory
+                //    .DefaultMarker(BitmapDescriptorFactory.HueBlue))
+                //    .SetPosition(riderlatlng)
+                //    .SetTitle("RiderLocation");
+                //mMap.AddMarker(ridermarker);
+
+                ////driver marker location
+                //MarkerOptions drivermarker = new MarkerOptions().SetPosition(driverlatlng).SetTitle("MyLocation");
+                //mMap.AddMarker(drivermarker);
+
+                ////move camera
+                //drivercamera = CameraUpdateFactory.NewLatLngZoom(driverlatlng, 10);
+                //mMap.MoveCamera(drivercamera);
+
+                //new way
+
+               
+                markers.Add(mMap.AddMarker(new MarkerOptions()
+                    .SetIcon(BitmapDescriptorFactory
+                    .DefaultMarker(BitmapDescriptorFactory.HueBlue))
+                    .SetPosition(riderlatlng)
+                    .SetTitle("RiderLocation")));
+                markers.Add(mMap.AddMarker(new MarkerOptions()
+                    .SetPosition(driverlatlng)
+                    .SetTitle("MyLocation")));
+
+                foreach (var m in markers)
+                {
+                    builder.Include(m.Position);
+                }
+
+                mMap.SetOnMapLoadedCallback(this);
+                
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
         }
+
         private void SetUpMapIfNeeded()
         {
             // Do a null check to confirm that we have not already instantiated the map.
             if (mMap == null)
             {
-                (SupportFragmentManager.FindFragmentById(Resource.Id.fragment_riderlocationmap) as SupportMapFragment).GetMapAsync(this);
-
+                var frag = (SupportFragmentManager.FindFragmentById(Resource.Id.fragment_riderlocationmap) as SupportMapFragment);
+                frag.GetMapAsync(this);
             }
+        }
+
+        public void OnMapLoaded()
+        {
+            mMap.MoveCamera(CameraUpdateFactory.NewLatLngBounds(builder.Build(), 100));
         }
     }
 }

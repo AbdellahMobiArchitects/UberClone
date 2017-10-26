@@ -99,14 +99,15 @@ namespace UberClone.Activities
                 mMap.Clear();
                 location = locationmanager.GetLastKnownLocation(provider);
                 LatLng latlng = new LatLng(location.Latitude, location.Longitude);
-                Android.Util.Log.Info("UberCloneApp", "UpdateLocation:\nLongitude: " + location.Longitude + "\nLatitude: " + location.Latitude);
-
+               
                 MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
                 mMap.AddMarker(options);
                 camera = CameraUpdateFactory.NewLatLngZoom(latlng, 18);
                 mMap.MoveCamera(camera);
+                Android.Util.Log.Info("UberCloneApp", "Rider Current Location:\nLongitude: " + location.Longitude + "\nLatitude: " + location.Latitude);
+
         }
-       
+
 
         public void OnLocationChanged(Location location)
         {
