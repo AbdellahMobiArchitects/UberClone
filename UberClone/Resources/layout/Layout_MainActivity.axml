@@ -4,7 +4,8 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:gravity="center">
+    android:gravity="center"
+    android:background="@color/lifterino_color">
     <ImageView
         android:id="@+id/imageview_logo"
         android:layout_width="match_parent"
@@ -13,7 +14,7 @@
         android:src="@drawable/image_logo"
         android:scaleType="fitXY" />
     <LinearLayout
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="50dp"
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

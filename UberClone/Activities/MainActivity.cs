@@ -14,6 +14,8 @@ using Newtonsoft.Json;
 using UberClone.Models;
 using UberClone.Helpers;
 using System.Net.Http.Headers;
+using Android.Support.V4.App;
+using System.Collections.Generic;
 
 namespace UberClone.Activities
 {
@@ -54,26 +56,86 @@ namespace UberClone.Activities
 
         
 
-        private void Button_getstarted_Click(object sender, EventArgs e)
+        private async void Button_getstarted_Click(object sender, EventArgs e)
         {
 
             if (switch_usertype.Checked)
             {
                 RiderOrDriver = switch_usertype.TextOn;
-                // SaveUserToDb(RiderOrDriver, typeof(ActivityViewRequests));
-                RedirectUser(typeof(ActivityViewRequests));
-                
+                var saveresult = await SaveUser();
+                if (saveresult.Item1)
+                {
+                    RedirectUser(typeof(ActivityViewRequests));
+                }
+                else
+                {
+                    Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+                    Android.App.AlertDialog alert = dialog.Create();
+                    alert.SetTitle("Information!");
+                    alert.SetMessage("Couldn't Connect You With Our Database");
+                    alert.SetIcon(Resource.Drawable.alert);
+                    alert.SetButton("OK", (c, ev) =>
+                    {
 
+                    });
+                    alert.Show();
+                }
             }
             if (!switch_usertype.Checked)
             {
                 RiderOrDriver = switch_usertype.TextOff;
-                //  SaveUserToDb(RiderOrDriver, typeof(ActivityYourLocation));
-                RedirectUser(typeof(ActivityYourLocation));
-               
+                var saveresult = await SaveUser();
+                if (saveresult.Item1)
+                {
+                    RedirectUser(typeof(ActivityYourLocation));
+                }
+                else
+                {
+                    Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+                    Android.App.AlertDialog alert = dialog.Create();
+                    alert.SetTitle("Information!");
+                    alert.SetMessage(saveresult.Item2);
+                    alert.SetIcon(Resource.Drawable.alert);
+                    alert.SetButton("OK", (c, ev) =>
+                    {
 
+                    });
+                    alert.Show();
+                }
             }
 
+        }
+
+        private async Task<Tuple<bool,string>> SaveUser()
+        {
+            //check internet first
+            if (CrossConnectivity.Current.IsConnected)
+            {
+                //internet available, setting up locals & save 'em to db
+                Settings.Usertype = RiderOrDriver;
+                var requestparameters = new FormUrlEncodedContent(new[]
+               {
+                     new KeyValuePair<string, string>("usertype", Settings.Usertype),
+                     new KeyValuePair<string, string>("user_longitude", Settings.User_long),
+                     new KeyValuePair<string, string>("user_latitude", Settings.User_Lat)
+                 });
+               var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users,HttpVerbs.POST,null,requestparameters);
+                if ( result.Item1 !=null & result.Item2)
+                {
+                    Settings.User_id = result.Item1.user_id.ToString();
+                    Settings.Username = result.Item1.username;
+                    return new Tuple<bool, string>(result.Item2,result.Item3);
+                }
+                else
+                {
+                    return new Tuple<bool, string>(result.Item2, result.Item3);
+                }
+            }
+            else
+            {
+                //internet not available, user tries again later
+                return new Tuple<bool, string>(false, "No Internet Connection!");
+            }
         }
 
         private void RedirectUser(Type activity)
@@ -81,7 +143,6 @@ namespace UberClone.Activities
             Intent i = new Intent(this, activity);
             i.PutExtra("user_type", RiderOrDriver);
             this.StartActivity(i);
-            Android.Util.Log.Info("UberCloneApp", "User is "+RiderOrDriver+" redirect to "+activity.ToString());
         }
 
         #region SaveUserToDB
@@ -132,58 +193,72 @@ namespace UberClone.Activities
         #region Onkeybackpressed
         public override void OnBackPressed()
         {
+            //bad idea deleting user from here; he can just kill process without doing this work
+            //TODO: implement a good userdeletion maybe after the request has been fulfilled
             Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
             Android.App.AlertDialog alert = dialog.Create();
             alert.SetTitle("Info");
             alert.SetMessage("Exit App?");
             alert.SetIcon(Resource.Drawable.alert);
-            alert.SetButton("OK", (c, ev) =>
+            alert.SetButton("OK",async (c, ev) =>
             {
-                base.OnBackPressed();
-                Android.Util.Log.Info("UberCloneApp", "Alert Ok");
-
-                //Deleteuserfromdb(Settings.User_id);
-                //Settings.ClearAll();
+                //base.OnBackPressed();
+                if (await DeleteUser())
+                {
+                    if (Android.OS.Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
+                    { FinishAndRemoveTask(); }
+                    else { Finish(); }
+                }
             });
-            alert.SetButton2("CANCEL", (c, ev) => {/* here cancel action */ Android.Util.Log.Info("UberCloneApp", "Alert Cancel"); });
+            alert.SetButton2("CANCEL", (c, ev) => {/* here cancel action */ });
             alert.Show();
         }
-        #endregion
 
-        #region deleteuserfromdb
-        //private async void Deleteuserfromdb(string user_id)
-        //{
-        //    try
-        //    {
-        //        if (CrossConnectivity.Current.IsConnected)
-        //        {
-        //            string url = AppUrls.api_url_users + user_id;
-        //            var httpClient = new HttpClient();
-        //            var response = await httpClient.DeleteAsync(url);
-        //            if (response.IsSuccessStatusCode)
-        //            {
-        //                Toast.MakeText(this, response.StatusCode.ToString() + response.ReasonPhrase.ToString(), ToastLength.Long).Show();
-        //            }
-        //            else
-        //            {
-        //                Toast.MakeText(this, response.StatusCode.ToString() + response.ReasonPhrase.ToString(), ToastLength.Long).Show();
-        //            }
-        //        }
-        //        else
-        //        {
-        //            Toast.MakeText(this, "No Connection; Couldn't Clear User From DB", ToastLength.Long).Show();
-        //        }
-        //    }
-        //    catch (System.Exception e)
-        //    {
-        //        for (int i = 0; i < 2; i++)
-        //        {
-        //            Toast.MakeText(this, e.Message, ToastLength.Long).Show();
-        //        }
+        private async Task<bool> DeleteUser()
+        {
+            if (!string.IsNullOrEmpty(Settings.User_id))
+            {
+                if (CrossConnectivity.Current.IsConnected)
+                {
+                    //attempting user deletion from db
+                    string url = AppUrls.api_url_users + Settings.User_id;
+                    var httpClient = new HttpClient();
+                    var response = await httpClient.DeleteAsync(url);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        //successful attempt, cleaning local variables as well
+                        Settings.ClearAll();
+                        Toast.MakeText(this, "Cya Next Time!", ToastLength.Short).Show();
+                        return true;
+                    }
+                    else
+                    {
+                        //failed attempt, app stays open for now
+                        Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+                        Android.App.AlertDialog alert = dialog.Create();
+                        alert.SetTitle("Information!");
+                        alert.SetMessage("Couldn't Clean User From Database!");
+                        alert.SetIcon(Resource.Drawable.alert);
+                        alert.SetButton("OK", (c, ev) =>
+                        {
 
-        //    }
-        //}
+                        });
+                        alert.Show();
+                        return false;
+                    }
+                }
+                else
+                {
+                    Toast.MakeText(this, "No Connection, Couldn't Clean User From Database!", ToastLength.Long).Show();
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
         #endregion
-    }
+        }
 }
 

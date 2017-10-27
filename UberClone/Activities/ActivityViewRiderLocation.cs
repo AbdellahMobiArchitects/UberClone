@@ -15,9 +15,11 @@ using Android.Gms.Maps;
 using Android.Support.V4.App;
 using Android.Gms.Maps.Model;
 
+using Android.Content.PM;
+
 namespace UberClone.Activities
 {
-    [Activity(Label = "ActivityViewRiderLocation", ScreenOrientation = Android.Content.PM.ScreenOrientation.Portrait, Theme = "@style/Theme.MyCustomTheme")]
+    [Activity(Label = "Client Location", ScreenOrientation =ScreenOrientation.Portrait, Theme = "@style/Theme.MyCustomTheme")]
     public class ActivityViewRiderLocation : FragmentActivity, ILocationListener, IOnMapReadyCallback, GoogleMap.IOnMapLoadedCallback
     {
         private GoogleMap mMap; //Null if google apk services isn't available...
@@ -69,8 +71,9 @@ namespace UberClone.Activities
 
         private void Buttonback_Click(object sender, EventArgs e)
         {
-            Intent i = new Intent(this, typeof(ActivityViewRequests));
-            this.StartActivity(i);
+            //Intent i = new Intent(this, typeof(ActivityViewRequests));
+            //this.StartActivity(i);
+            OnBackPressed();
         }
 
         private void Acceptrequest_Click(object sender, EventArgs e)
@@ -84,22 +87,22 @@ namespace UberClone.Activities
         public void OnLocationChanged(Location location)
         {
             UpdateLocation();
-            Android.Util.Log.Info("UberCloneApp.ActivityViewRiderLocation.OnLocationChanged", "Location Changed");
+            Toast.MakeText(this, "Location Changed", ToastLength.Short);
         }
 
         public void OnProviderDisabled(string provider)
         {
-            Android.Util.Log.Info("UberCloneApp.ActivityViewRiderLocation.OnProviderDisabled", "Provider Disabled");
+            Toast.MakeText(this, "Provider Disabled", ToastLength.Short);
         }
 
         public void OnProviderEnabled(string provider)
         {
-            Android.Util.Log.Info("UberCloneApp.ActivityViewRiderLocation.OnProviderEnabled", "Provider Enabled");
+            Toast.MakeText(this, "Provider Enabled", ToastLength.Short);
         }
 
         public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
         {
-            Android.Util.Log.Info("UberCloneApp.ActivityViewRiderLocation.OnStatusChanged", "Status Changed");
+            Toast.MakeText(this, "Status Changed", ToastLength.Short);
         }
 
         public void OnMapReady(GoogleMap googleMap)
@@ -117,42 +120,56 @@ namespace UberClone.Activities
             {
                 mMap.Clear();
                 location = locationmanager.GetLastKnownLocation(provider);
-
-                //driver & rider latlng locs
-                LatLng riderlatlng = new LatLng(riderlatitude, riderlongitude);
-                LatLng driverlatlng = new LatLng(location.Latitude, location.Longitude);
-
-                ////rider marker location
-                //MarkerOptions ridermarker = new MarkerOptions()
-                //    .SetIcon(BitmapDescriptorFactory
-                //    .DefaultMarker(BitmapDescriptorFactory.HueBlue))
-                //    .SetPosition(riderlatlng)
-                //    .SetTitle("RiderLocation");
-                //mMap.AddMarker(ridermarker);
-
-                ////driver marker location
-                //MarkerOptions drivermarker = new MarkerOptions().SetPosition(driverlatlng).SetTitle("MyLocation");
-                //mMap.AddMarker(drivermarker);
-
-                ////move camera
-                //drivercamera = CameraUpdateFactory.NewLatLngZoom(driverlatlng, 10);
-                //mMap.MoveCamera(drivercamera);
-
-                //new way
-
-               
-                markers.Add(mMap.AddMarker(new MarkerOptions()
-                    .SetIcon(BitmapDescriptorFactory
-                    .DefaultMarker(BitmapDescriptorFactory.HueBlue))
-                    .SetPosition(riderlatlng)
-                    .SetTitle("RiderLocation")));
-                markers.Add(mMap.AddMarker(new MarkerOptions()
-                    .SetPosition(driverlatlng)
-                    .SetTitle("MyLocation")));
-
-                foreach (var m in markers)
+                if (location != null)
                 {
-                    builder.Include(m.Position);
+                    LatLng driverlatlng = new LatLng(location.Latitude, location.Longitude);
+                    markers.Add(mMap.AddMarker(new MarkerOptions()
+                        .SetPosition(driverlatlng)
+                        .SetTitle("MyLocation")));
+                }
+                else
+                {
+                    Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+                    Android.App.AlertDialog alert = dialog.Create();
+                    alert.SetTitle("Information!");
+                    alert.SetMessage("Couldn't Locate Your Position");
+                    alert.SetIcon(Resource.Drawable.alert);
+                    alert.SetButton("OK", (c, ev) =>
+                    {
+
+                    });
+                    alert.Show();
+                }
+                if (riderlatitude!=0 & riderlongitude!=0)
+                {
+                    LatLng riderlatlng = new LatLng(riderlatitude, riderlongitude);
+                    markers.Add(mMap.AddMarker(new MarkerOptions()
+                        .SetIcon(BitmapDescriptorFactory
+                        .DefaultMarker(BitmapDescriptorFactory.HueBlue))
+                        .SetPosition(riderlatlng)
+                        .SetTitle("RiderLocation")));
+                }
+                else
+                {
+                    Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+                    Android.App.AlertDialog alert = dialog.Create();
+                    alert.SetTitle("Information!");
+                    alert.SetMessage("Couldn't Locate Client Position");
+                    alert.SetIcon(Resource.Drawable.alert);
+                    alert.SetButton("OK", (c, ev) =>
+                    {
+
+                    });
+                    alert.Show();
+                }
+
+                if (markers.Count > 0)
+                {
+                    foreach (var m in markers)
+                    {
+                        builder.Include(m.Position);
+                    }
+
                 }
 
                 mMap.SetOnMapLoadedCallback(this);
@@ -160,7 +177,16 @@ namespace UberClone.Activities
             }
             catch (Exception ex)
             {
-                throw;
+                Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+                Android.App.AlertDialog alert = dialog.Create();
+                alert.SetTitle("Information!");
+                alert.SetMessage(ex.InnerException.Message);
+                alert.SetIcon(Resource.Drawable.alert);
+                alert.SetButton("OK", (c, ev) =>
+                {
+
+                });
+                alert.Show();
             }
         }
 

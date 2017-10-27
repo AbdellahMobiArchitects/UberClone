@@ -21,8 +21,7 @@ using System.Threading.Tasks;
 
 namespace UberClone.Activities
 {
-    [Activity(Label = "ActivityYourLocation",
-        ScreenOrientation = ScreenOrientation.Portrait)]
+    [Activity(Label = "Current Location",ScreenOrientation = ScreenOrientation.Portrait)]
     public class ActivityYourLocation : FragmentActivity, ILocationListener ,IOnMapReadyCallback
     {
         

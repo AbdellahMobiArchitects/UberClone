@@ -17,9 +17,9 @@ using System.Collections.Specialized;
 
 namespace UberClone.Helpers
 {
-    class RestRequestType
+   public class RestHelper
     {
-        public static async Task<T> GetRequest<T>(string url, HttpVerbs method = HttpVerbs.GET, NameValueCollection getParameters = null, FormUrlEncodedContent postParameters = null)
+        public static async Task<Tuple<T, bool,string>>APIRequest<T>(string url, HttpVerbs method = HttpVerbs.GET, NameValueCollection getParameters = null, FormUrlEncodedContent postParameters = null)
         {
             try
             {
@@ -45,16 +45,27 @@ namespace UberClone.Helpers
                             break;
                     }
 
-                    var stringResponseJson = await response.Content.ReadAsStringAsync();
+                   
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var stringResponseJson = await response.Content.ReadAsStringAsync();
 
-                    T result = JsonConvert.DeserializeObject<T>(stringResponseJson);
+                        T result = JsonConvert.DeserializeObject<T>(stringResponseJson);
+                       
+                            return new Tuple<T, bool, string>(result, true, response.StatusCode + " " + response.ReasonPhrase);
+                        
+                    }
+                    else
+                    {
+                        return new Tuple<T, bool, string>(default(T), false, response.StatusCode + " " + response.ReasonPhrase);
+                    }
 
-                    return result;
+                    
                 }
             }
             catch (Exception ex)
             {
-                return default(T);
+                return new Tuple<T, bool, string>(default(T), false,ex.InnerException.Message);
             }
         }
 

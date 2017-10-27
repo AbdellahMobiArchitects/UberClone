@@ -51,8 +51,9 @@ namespace UberClone.Activities
                 locationmanager.RequestLocationUpdates(provider, 400, 1, this);
 
 
+                #region call getrequests & populate listview
                 //code
-                //var requests = await RestRequestType.GetRequest<List<Request>>(AppUrls.api_url_requests, HttpVerbs.GET, null, null);
+                //var requests = await RestRequestType.APIRequest<List<Request>>(AppUrls.api_url_requests, HttpVerbs.GET, null, null);
                 //if (requests.Count>0)
                 //{
                 //    list_requests.Clear();
@@ -65,8 +66,8 @@ namespace UberClone.Activities
                 //        }
                 //    }
                 //    Android.Util.Log.Info("UberCloneApp.ListRequests", list_requests.ToString());
-                    //var ListAdapter = new ArrayAdapter<String>(this, Android.Resource.Layout.SimpleListItem1, list_requests);
-                    //  lvrequests.Adapter = ListAdapter;
+                //var ListAdapter = new ArrayAdapter<String>(this, Android.Resource.Layout.SimpleListItem1, list_requests);
+                //  lvrequests.Adapter = ListAdapter;
                 //}
                 //else
                 //{
@@ -81,7 +82,8 @@ namespace UberClone.Activities
                 //    });
                 //    alert.Show();
                 //}
-                
+                #endregion
+
 
             }
             catch (Exception e)
