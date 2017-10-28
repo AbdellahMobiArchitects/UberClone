@@ -40,22 +40,6 @@ namespace UberClone.Activities
 
             button_getstarted.Click += Button_getstarted_Click;
         }
-
-       
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-
-        }
-        protected override void OnResume()
-        {
-            base.OnResume();
-           
-        }
-
-        
-
         private async void Button_getstarted_Click(object sender, EventArgs e)
         {
 
@@ -105,8 +89,40 @@ namespace UberClone.Activities
             }
 
         }
+        private void RedirectUser(Type activity)
+        {
+            Intent i = new Intent(this, activity);
+            i.PutExtra("user_type", RiderOrDriver);
+            this.StartActivity(i);
+        }
 
-        private async Task<Tuple<bool,string>> SaveUser()
+        #region Onkeybackpressed
+        public override void OnBackPressed()
+        {
+            //bad idea deleting user from here; he can just kill process without doing this work
+            //TODO: implement a good userdeletion maybe after the request has been fulfilled
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            Android.App.AlertDialog alert = dialog.Create();
+            alert.SetTitle("Info");
+            alert.SetMessage("Exit App?");
+            alert.SetIcon(Resource.Drawable.alert);
+            alert.SetButton("OK", async (c, ev) =>
+             {
+                 //base.OnBackPressed();
+                 if (await DeleteUser())
+                 {
+                     if (Android.OS.Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
+                     { FinishAndRemoveTask(); }
+                     else { Finish(); }
+                 }
+             });
+            alert.SetButton2("CANCEL", (c, ev) => {/* here cancel action */ });
+            alert.Show();
+        }
+        #endregion
+
+        #region SaveUserToDB
+        private async Task<Tuple<bool, string>> SaveUser()
         {
             //check internet first
             if (CrossConnectivity.Current.IsConnected)
@@ -116,15 +132,15 @@ namespace UberClone.Activities
                 var requestparameters = new FormUrlEncodedContent(new[]
                {
                      new KeyValuePair<string, string>("usertype", Settings.Usertype),
-                     new KeyValuePair<string, string>("user_longitude", Settings.User_long),
-                     new KeyValuePair<string, string>("user_latitude", Settings.User_Lat)
+                     new KeyValuePair<string, string>("user_longitude",Settings.User_Longitude),
+                     new KeyValuePair<string, string>("user_latitude",Settings.User_Latitude)
                  });
-               var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users,HttpVerbs.POST,null,requestparameters);
-                if ( result.Item1 !=null & result.Item2)
+                var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users, HttpVerbs.POST, null, requestparameters);
+                if (result.Item1 != null & result.Item2)
                 {
-                    Settings.User_id = result.Item1.user_id.ToString();
+                    Settings.User_ID = result.Item1.user_id.ToString();
                     Settings.Username = result.Item1.username;
-                    return new Tuple<bool, string>(result.Item2,result.Item3);
+                    return new Tuple<bool, string>(result.Item2, result.Item3);
                 }
                 else
                 {
@@ -137,97 +153,24 @@ namespace UberClone.Activities
                 return new Tuple<bool, string>(false, "No Internet Connection!");
             }
         }
-
-        private void RedirectUser(Type activity)
-        {
-            Intent i = new Intent(this, activity);
-            i.PutExtra("user_type", RiderOrDriver);
-            this.StartActivity(i);
-        }
-
-        #region SaveUserToDB
-        //private async void SaveUserToDb(string usertype, Type activity)
-        //{
-        //    try
-        //    {
-        //        if (CrossConnectivity.Current.IsConnected)
-        //        {
-        //            string url = AppUrls.api_url_users;
-        //            User user1 = new User
-        //            {
-        //                usertype = usertype,
-        //            };
-        //            var myContent = JsonConvert.SerializeObject(user1);
-        //            var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
-        //            var byteContent = new ByteArrayContent(buffer);
-        //            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        //            var httpClient = new HttpClient();
-
-
-        //            var response = await httpClient.PostAsync(url, byteContent);
-        //            if (response.IsSuccessStatusCode)
-        //            {
-        //                Toast.MakeText(this, response.StatusCode.ToString() + response.ReasonPhrase.ToString(), ToastLength.Long).Show();
-        //                Settings.User_id = user1.user_id.ToString();
-        //                Settings.Username = user1.username;
-        //                Settings.Usertype = user1.usertype;
-        //                Settings.User_Lat = user1.user_latitude.ToString();
-        //                Settings.User_long = user1.user_longitude.ToString();
-        //                RedirectUser(activity);
-        //            }
-        //            else
-        //            {
-        //                Toast.MakeText(this, response.StatusCode.ToString() + response.ReasonPhrase.ToString(), ToastLength.Long).Show();
-        //            }
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-
-        //        Toast.MakeText(this, e.Message, ToastLength.Long).Show();
-
-        //    }
-        //}
         #endregion
 
-        #region Onkeybackpressed
-        public override void OnBackPressed()
-        {
-            //bad idea deleting user from here; he can just kill process without doing this work
-            //TODO: implement a good userdeletion maybe after the request has been fulfilled
-            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-            Android.App.AlertDialog alert = dialog.Create();
-            alert.SetTitle("Info");
-            alert.SetMessage("Exit App?");
-            alert.SetIcon(Resource.Drawable.alert);
-            alert.SetButton("OK",async (c, ev) =>
-            {
-                //base.OnBackPressed();
-                if (await DeleteUser())
-                {
-                    if (Android.OS.Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
-                    { FinishAndRemoveTask(); }
-                    else { Finish(); }
-                }
-            });
-            alert.SetButton2("CANCEL", (c, ev) => {/* here cancel action */ });
-            alert.Show();
-        }
+        #region DeleteUserFromDB
 
         private async Task<bool> DeleteUser()
         {
-            if (!string.IsNullOrEmpty(Settings.User_id))
+            if (!string.IsNullOrEmpty(Settings.User_ID))
             {
                 if (CrossConnectivity.Current.IsConnected)
                 {
                     //attempting user deletion from db
-                    string url = AppUrls.api_url_users + Settings.User_id;
+                    string url = AppUrls.api_url_users + Settings.User_ID;
                     var httpClient = new HttpClient();
                     var response = await httpClient.DeleteAsync(url);
                     if (response.IsSuccessStatusCode)
                     {
                         //successful attempt, cleaning local variables as well
-                        Settings.ClearAll();
+                        Settings.ClearUserLocalVars();
                         Toast.MakeText(this, "Cya Next Time!", ToastLength.Short).Show();
                         return true;
                     }
@@ -258,7 +201,7 @@ namespace UberClone.Activities
                 return false;
             }
         }
-        #endregion
-        }
-}
 
+        #endregion
+    }
+}

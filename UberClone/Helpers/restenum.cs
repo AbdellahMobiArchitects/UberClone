@@ -14,6 +14,6 @@ namespace UberClone.Helpers
 {
         public enum HttpVerbs
         {
-            GET, POST
+            GET, POST, PUT
         }
 }

@@ -38,97 +38,202 @@ namespace UberClone.Helpers
 				AppSettings.AddOrUpdateValue(SettingsKey, value);
 			}
 		}
-        #region User_id
-        private const string User_idKey = "User_idKey";
-        private static readonly string User_idDefault = string.Empty;
 
-        public static string User_id
+
+        #region User Constants
+
+        #region user_id Constant
+        private const string user_id_Key = "user_id_Key";
+        private static readonly string User_id_default = string.Empty;
+
+        public static string User_ID
         {
             get
             {
-                return AppSettings.GetValueOrDefault(User_idKey, User_idDefault);
+                return AppSettings.GetValueOrDefault(user_id_Key, User_id_default);
             }
             set
             {
-                AppSettings.AddOrUpdateValue(User_idKey, value);
+                AppSettings.AddOrUpdateValue(user_id_Key, value);
             }
         }
         #endregion
 
         #region Username Constant
-        private const string UsernameKey = "UsernameKey";
-        private static readonly string UsernameDefault = string.Empty;
+        private const string username_Key = "username_Key";
+        private static readonly string username_default = string.Empty;
 
         public static string Username
         {
             get
             {
-                return AppSettings.GetValueOrDefault(UsernameKey, UsernameDefault);
+                return AppSettings.GetValueOrDefault(username_Key, username_default);
             }
             set
             {
-                AppSettings.AddOrUpdateValue(UsernameKey, value);
+                AppSettings.AddOrUpdateValue(username_Key, value);
             }
         }
         #endregion
 
-        #region Usertype Constant
-        private const string UsertypeKey = "UsertypeKey";
-        private static readonly string UsertypeDefault = string.Empty;
+        #region usertype Constant
+        private const string usertype_Key = "usertype_Key";
+        private static readonly string usertype_default = string.Empty;
 
         public static string Usertype
         {
             get
             {
-                return AppSettings.GetValueOrDefault(UsertypeKey, UsertypeDefault);
+                return AppSettings.GetValueOrDefault(usertype_Key, usertype_default);
             }
             set
             {
-                AppSettings.AddOrUpdateValue(UsertypeKey, value);
+                AppSettings.AddOrUpdateValue(usertype_Key, value);
             }
         }
         #endregion
 
-        #region User_long Constant
-        private const string User_longKey = "User_longKey";
-        private static readonly string User_longDefault = string.Empty;
+        #region user_longitude Constant
+        private const string user_longitude_Key = "user_longitude_Key";
+        private static readonly string user_longitude_default = string.Empty;
 
-        public static string User_long
+        public static string User_Longitude
         {
             get
             {
-                return AppSettings.GetValueOrDefault(User_longKey, User_longDefault);
+                return AppSettings.GetValueOrDefault(user_longitude_Key, user_longitude_default);
             }
             set
             {
-                AppSettings.AddOrUpdateValue(User_longKey, value);
+                AppSettings.AddOrUpdateValue(user_longitude_Key, value);
             }
         }
         #endregion
 
-        #region User_Lat Constant
-        private const string User_LatKey = "User_LatKey";
-        private static readonly string User_LatDefault = string.Empty;
+        #region user_latitude Constant
+        private const string user_latitude_Key = "user_latitude_Key";
+        private static readonly string user_latitude_default = string.Empty;
 
-        public static string User_Lat
+        public static string User_Latitude
         {
             get
             {
-                return AppSettings.GetValueOrDefault(User_LatKey, User_LatDefault);
+                return AppSettings.GetValueOrDefault(user_latitude_Key, user_latitude_default);
             }
             set
             {
-                AppSettings.AddOrUpdateValue(User_LatKey, value);
+                AppSettings.AddOrUpdateValue(user_latitude_Key, value);
             }
         }
         #endregion
-        internal static void ClearAll()
+
+        #endregion
+
+        #region Request Constants
+
+        #region request_id Constant
+        private const string request_id_Key = "request_id_key";
+        private static readonly string request_id_default = string.Empty;
+
+        public static string Request_ID
         {
-            User_id = null;
+            get
+            {
+                return AppSettings.GetValueOrDefault(request_id_Key, request_id_default);
+            }
+            set
+            {
+                AppSettings.AddOrUpdateValue(request_id_Key, value);
+            }
+        }
+        #endregion
+
+        #region requester_username Constant
+        private const string requester_username_Key = "requester_username_Key";
+        private static readonly string requester_username_default = string.Empty;
+
+        public static string Requester_Username
+        {
+            get
+            {
+                return AppSettings.GetValueOrDefault(requester_username_Key, requester_username_default);
+            }
+            set
+            {
+                AppSettings.AddOrUpdateValue(requester_username_Key, value);
+            }
+        }
+        #endregion
+
+        #region requester_longitude Constant
+        private const string requester_longitude_Key = "requester_longitude_Key";
+        private static readonly string requester_longitude_default = string.Empty;
+
+        public static string Requester_Longitude
+        {
+            get
+            {
+                return AppSettings.GetValueOrDefault(requester_longitude_Key, requester_longitude_default);
+            }
+            set
+            {
+                AppSettings.AddOrUpdateValue(requester_longitude_Key, value);
+            }
+        }
+        #endregion
+
+        #region requester_latitude Constant
+        private const string requester_latitude_Key = "requester_latitude_Key";
+        private static readonly string requester_latitude_default = string.Empty;
+
+        public static string Requester_Latitude
+        {
+            get
+            {
+                return AppSettings.GetValueOrDefault(requester_latitude_Key, requester_latitude_default);
+            }
+            set
+            {
+                AppSettings.AddOrUpdateValue(requester_latitude_Key, value);
+            }
+        }
+        #endregion
+
+        #region driver_usename Constant
+        private const string driver_usename_Key = "driver_usename_Key";
+        private static readonly string driver_usename_default = string.Empty;
+
+        public static string Driver_Username
+        {
+            get
+            {
+                return AppSettings.GetValueOrDefault(driver_usename_Key, driver_usename_default);
+            }
+            set
+            {
+                AppSettings.AddOrUpdateValue(driver_usename_Key, value);
+            }
+        }
+        #endregion
+
+        #endregion
+
+        internal static void ClearUserLocalVars()
+        {
+            User_ID = null;
             Username = null;
             Usertype = null;
-            User_long = null;
-            User_Lat = null;
+            User_Longitude = null;
+            User_Latitude = null;
+        }
+
+        internal static void ClearRequestLocalVars()
+        {
+            Request_ID = null;
+            Requester_Username = null;
+            Requester_Longitude = null;
+            Requester_Latitude = null;
+            Driver_Username = null;
         }
 
     }

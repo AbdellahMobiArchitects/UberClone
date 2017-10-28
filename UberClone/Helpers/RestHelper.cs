@@ -19,7 +19,7 @@ namespace UberClone.Helpers
 {
    public class RestHelper
     {
-        public static async Task<Tuple<T, bool,string>>APIRequest<T>(string url, HttpVerbs method = HttpVerbs.GET, NameValueCollection getParameters = null, FormUrlEncodedContent postParameters = null)
+        public static async Task<Tuple<T, bool,string>>APIRequest<T>(string url, HttpVerbs method = HttpVerbs.GET, NameValueCollection getParameters = null, FormUrlEncodedContent postParameters = null,FormUrlEncodedContent putParameters =null)
         {
             try
             {
@@ -40,6 +40,9 @@ namespace UberClone.Helpers
                             break;
                         case HttpVerbs.POST:
                             response = await client.PostAsync(uri, postParameters);
+                            break;
+                        case HttpVerbs.PUT:
+                            response = await client.PutAsync(uri, putParameters);
                             break;
                         default:
                             break;
