@@ -105,35 +105,29 @@ namespace UberClone.Activities
         {
             mMap.Clear();
             location = locationmanager.GetLastKnownLocation(provider);
-            
-            
 
             if (requestactive == false)
             {
-                var allrequest = await GetThisUserRequest();
-                if (allrequest.Item1.Count>0)
+                var userrequest = await GetThisUserRequest();
+                requestactive = true;
+                tvinfo.Text = "Finding UberDriver...";
+                button_requestuber.Text = "Cancel Uber";
+                thisrequestdriverusername = userrequest.Item1.driver_usename;
+                if (!string.IsNullOrEmpty(thisrequestdriverusername))
                 {
-                    var userrequest = allrequest.Item1.Where(x => x.requester_username == Settings.Username).ToList<Request>();
-                    if (userrequest.Count >0)
-                    {
-                        requestactive = true;
-                        tvinfo.Text = "Finding UberDriver...";
-                        button_requestuber.Text = "Cancel Uber";
-                        thisrequestdriverusername = userrequest[0].driver_usename;
-                        if (!string.IsNullOrEmpty(thisrequestdriverusername))
-                        {
-                            tvinfo.Text = "Your Driver Is Cumming";
-                            button_requestuber.Visibility = ViewStates.Invisible;
-                        }
-                    }
+                    tvinfo.Text = "Your Driver Is Cumming";
+                    button_requestuber.Visibility = ViewStates.Invisible;
                 }
             }
+
             if (String.IsNullOrEmpty(thisrequestdriverusername))
             {
                 if (location != null)
                 {
                     LatLng latlng = new LatLng(location.Latitude, location.Longitude);
-                    MarkerOptions options = new MarkerOptions().SetPosition(latlng).SetTitle("MyLocation");
+                    MarkerOptions options = new MarkerOptions()
+                                            .SetPosition(latlng)
+                                            .SetTitle("MyLocation");
                     mMap.AddMarker(options);
                     camera = CameraUpdateFactory.NewLatLngZoom(latlng, 18);
                     mMap.MoveCamera(camera);
@@ -147,7 +141,7 @@ namespace UberClone.Activities
             {
                 if (!String.IsNullOrEmpty(thisrequestdriverusername))
                 {
-                    var result = await GetThisUsersRequestDriverLocation();
+                    var result = await GetRequestDriverLocation();
                     if (result.Item1 != default(User) && result.Item1 != null)
                     {
                         mydriverlocation.Longitude = (double)result.Item1.user_longitude;
@@ -196,7 +190,7 @@ namespace UberClone.Activities
 
 
         }
-       
+        #region Request Uber Button Click
         private async void button_requestuber_Click(object sender, EventArgs e)
         {
             if (!requestactive)
@@ -206,19 +200,20 @@ namespace UberClone.Activities
                 requestactive = true;
                 tvinfo.Text = "Finding UberDriver...";
                 button_requestuber.Text = "Cancel Uber";
-                
-                
+
+
             }
             else
-            {   
+            {
                 /*remove request from db*/
                 var saveresult = await DeleteUserRequest();
                 requestactive = false;
                 tvinfo.Text = "";
                 button_requestuber.Text = "Request Uber";
-                
+
             }
         }
+        #endregion
 
         #region SaveRequestToDB
         private async Task<Tuple<bool, string>> SaveUsersRequest()
@@ -253,32 +248,32 @@ namespace UberClone.Activities
         }
         #endregion
 
-        #region GetUsersRequestFromDB
+        #region GetThisUserRequest
 
-        private async Task<Tuple<List<Request>, bool, string>> GetThisUserRequest()
+        public async Task<Tuple<Request,bool,string>> GetThisUserRequest()
         {
             //check internet first
             if (CrossConnectivity.Current.IsConnected)
             {
-                //internet available, setting up locals & getting this user's very own request
+                //internet available, get this user's request
 
                 var requestparameters = new NameValueCollection();
-              requestparameters.Add("requester_username",Settings.Username);
-                
-                var result = await RestHelper.APIRequest<List<Request>>(AppUrls.api_url_requests, HttpVerbs.GET,requestparameters,null);
+                requestparameters.Add("username", Settings.Username);
+
+                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_users, HttpVerbs.GET, requestparameters, null);
                 if (result.Item1 != null & result.Item2)
                 {
-                    return new Tuple<List<Request>, bool, string>(result.Item1,result.Item2, result.Item3);
+                    return new Tuple<Request, bool, string>(result.Item1, result.Item2, result.Item3);
                 }
                 else
                 {
-                    return new Tuple<List<Request>, bool, string>(result.Item1, result.Item2, result.Item3);
+                    return new Tuple<Request, bool, string>(result.Item1, result.Item2, result.Item3);
                 }
             }
             else
             {
                 //internet not available, user tries again later
-                return new Tuple<List<Request>, bool, string>(default(List<Request>), false, "No Internet Connection!");
+                return new Tuple<Request, bool, string>(default(Request), false, "No Internet Connection!");
             }
         }
 
@@ -367,7 +362,7 @@ namespace UberClone.Activities
 
         #region GetDriverLocation
 
-        private async Task<Tuple<User, bool, string>> GetThisUsersRequestDriverLocation()
+        private async Task<Tuple<User, bool, string>> GetRequestDriverLocation()
         {
             //check internet first
             if (CrossConnectivity.Current.IsConnected)

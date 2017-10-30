@@ -127,19 +127,19 @@ namespace UberClone.Activities
             //check internet first
             if (CrossConnectivity.Current.IsConnected)
             {
-                //internet available, setting up locals & save 'em to db
-                Settings.Usertype = RiderOrDriver;
+                //internet available, save2db & set up localc params
                 var requestparameters = new FormUrlEncodedContent(new[]
                {
-                     new KeyValuePair<string, string>("usertype", Settings.Usertype),
-                     new KeyValuePair<string, string>("user_longitude",Settings.User_Longitude),
-                     new KeyValuePair<string, string>("user_latitude",Settings.User_Latitude)
+                     new KeyValuePair<string, string>("usertype", RiderOrDriver)
                  });
                 var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users, HttpVerbs.POST, null, requestparameters);
                 if (result.Item1 != null & result.Item2)
                 {
                     Settings.User_ID = result.Item1.user_id.ToString();
                     Settings.Username = result.Item1.username;
+                    Settings.Usertype = result.Item1.usertype;
+                    Settings.User_Longitude = result.Item1.user_longitude.ToString();
+                    Settings.User_Latitude = result.Item1.user_latitude.ToString();
                     return new Tuple<bool, string>(result.Item2, result.Item3);
                 }
                 else

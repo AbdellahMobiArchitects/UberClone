@@ -110,7 +110,6 @@ namespace UberClone.Activities
         private void UpdateLocation()
         {
             location = locationmanager.GetLastKnownLocation(provider);
-            Android.Util.Log.Info("UberCloneApp", "DriverLocationUpdate:\nLongitude: " + location.Longitude + "\nLatitude: " + location.Latitude);
 
         }
         public void OnLocationChanged(Location location)

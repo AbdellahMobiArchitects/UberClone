@@ -15,10 +15,22 @@ namespace UberClone.Web.Controllers
     {
         private dbcontext db = new dbcontext();
 
+        //// GET: WebSiteRequests
+        //public async Task<ActionResult> Index()
+        //{
+        //    return View(await db.Requests.ToListAsync());
+        //}
+
         // GET: WebSiteRequests
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(string id)
         {
-            return View(await db.Requests.ToListAsync());
+            string searchString = id;
+            var requests = await db.Requests.ToListAsync();
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                requests = requests.Where(x => x.requester_username.Contains(searchString)).ToList<Requests>();
+            }
+            return View(requests);
         }
 
         // GET: WebSiteRequests/Details/5

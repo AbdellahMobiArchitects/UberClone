@@ -22,6 +22,21 @@ namespace UberClone.Web.Controllers
         {
             return db.Requests;
         }
+        // GET: api/Requests/GetRequestsWithoutDriver
+        [Route("api/Requests/GetThisUserRequest")]
+        [HttpGet]
+        public IQueryable<Requests> GetThisUserRequest(string username)
+        {
+            return db.Requests.Where(x => x.requester_username == username);
+        }
+
+        // GET: api/Requests/GetRequestsWithoutDriver
+        [Route("api/Requests/GetRequestsWithoutDriver")]
+        [HttpGet]
+        public IQueryable<Requests> GetRequestsWithoutDriver()
+        {
+            return db.Requests.Where(x => x.driver_usename == null);
+        }
 
         // GET: api/Requests/5
         [ResponseType(typeof(Requests))]

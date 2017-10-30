@@ -16,6 +16,7 @@ using Android.Support.V4.App;
 using Android.Gms.Maps.Model;
 
 using Android.Content.PM;
+using System.Globalization;
 
 namespace UberClone.Activities
 {
@@ -80,7 +81,7 @@ namespace UberClone.Activities
         {
                  Intent intent = new Intent(Intent.ActionView,
 
-                Android.Net.Uri.Parse("http://maps.google.com/maps?daddr=" + riderlatitude + "," +  riderlongitude));
+                Android.Net.Uri.Parse("http://maps.google.com/maps?daddr=" + riderlatitude.ToString(CultureInfo.InvariantCulture) + "," +  riderlongitude.ToString(CultureInfo.InvariantCulture)));
                 StartActivity(intent);
         }
 
