@@ -46,46 +46,53 @@ namespace UberClone.Activities
             if (switch_usertype.Checked)
             {
                 RiderOrDriver = switch_usertype.TextOn;
-                var saveresult = await SaveUser();
-                if (saveresult.Item1)
+                if (string.IsNullOrEmpty(Settings.User_ID))
+                {
+                    var saveresult = await SaveUser();
+                    if (saveresult.Item2)
+                    {
+                        RedirectUser(typeof(ActivityViewRequests));
+                    }
+                    else
+                    {
+                        Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+                        Android.App.AlertDialog alert = dialog.Create();
+                        alert.SetTitle("Information!");
+                        alert.SetMessage("Couldn't Add You To Database");
+                        alert.SetIcon(Resource.Drawable.alert);
+                        alert.SetButton("OK", (c, ev) =>
+                        {
+
+                        });
+                        alert.Show();
+                    }
+                }
+                if (!string.IsNullOrEmpty(Settings.User_ID))
                 {
                     RedirectUser(typeof(ActivityViewRequests));
-                }
-                else
-                {
-                    Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                    Android.App.AlertDialog alert = dialog.Create();
-                    alert.SetTitle("Information!");
-                    alert.SetMessage("Couldn't Connect You With Our Database");
-                    alert.SetIcon(Resource.Drawable.alert);
-                    alert.SetButton("OK", (c, ev) =>
-                    {
-
-                    });
-                    alert.Show();
                 }
             }
             if (!switch_usertype.Checked)
             {
                 RiderOrDriver = switch_usertype.TextOff;
-                var saveresult = await SaveUser();
-                if (saveresult.Item1)
+                if (string.IsNullOrEmpty(Settings.User_ID) )
+                {
+                    var saveresult = await SaveUser();
+                    if (saveresult.Item2)
+                    {
+                        Settings.User_ID = saveresult.Item1.user_id.ToString();
+                        Settings.Username = saveresult.Item1.username;
+                        Settings.Usertype = saveresult.Item1.usertype;
+                        Settings.User_Longitude = saveresult.Item1.user_longitude.ToString();
+                        Settings.User_Latitude = saveresult.Item1.user_latitude.ToString();
+                        RedirectUser(typeof(ActivityYourLocation));
+                    }
+                }
+                if (!string.IsNullOrEmpty(Settings.User_ID))
                 {
                     RedirectUser(typeof(ActivityYourLocation));
                 }
-                else
-                {
-                    Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                    Android.App.AlertDialog alert = dialog.Create();
-                    alert.SetTitle("Information!");
-                    alert.SetMessage(saveresult.Item2);
-                    alert.SetIcon(Resource.Drawable.alert);
-                    alert.SetButton("OK", (c, ev) =>
-                    {
-
-                    });
-                    alert.Show();
-                }
+                
             }
 
         }
@@ -122,35 +129,30 @@ namespace UberClone.Activities
         #endregion
 
         #region SaveUserToDB
-        private async Task<Tuple<bool, string>> SaveUser()
+        private async Task<Tuple<User,bool, string>> SaveUser()
         {
             //check internet first
             if (CrossConnectivity.Current.IsConnected)
             {
                 //internet available, save2db & set up localc params
-                var requestparameters = new FormUrlEncodedContent(new[]
+                var postparams = new FormUrlEncodedContent(new[]
                {
                      new KeyValuePair<string, string>("usertype", RiderOrDriver)
                  });
-                var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users, HttpVerbs.POST, null, requestparameters);
+                var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users, HttpVerbs.POST, null, postparams,null);
                 if (result.Item1 != null & result.Item2)
                 {
-                    Settings.User_ID = result.Item1.user_id.ToString();
-                    Settings.Username = result.Item1.username;
-                    Settings.Usertype = result.Item1.usertype;
-                    Settings.User_Longitude = result.Item1.user_longitude.ToString();
-                    Settings.User_Latitude = result.Item1.user_latitude.ToString();
-                    return new Tuple<bool, string>(result.Item2, result.Item3);
+                    return new Tuple<User, bool, string>(result.Item1, result.Item2, result.Item3);
                 }
                 else
                 {
-                    return new Tuple<bool, string>(result.Item2, result.Item3);
+                    return new Tuple<User, bool, string>(result.Item1, result.Item2, result.Item3);
                 }
             }
             else
             {
                 //internet not available, user tries again later
-                return new Tuple<bool, string>(false, "No Internet Connection!");
+                return new Tuple<User, bool, string>(default(User),false, "No Internet Connection!");
             }
         }
         #endregion
@@ -170,7 +172,7 @@ namespace UberClone.Activities
                     if (response.IsSuccessStatusCode)
                     {
                         //successful attempt, cleaning local variables as well
-                        Settings.ClearUserLocalVars();
+                        //Settings.ClearUserLocalVars();
                         Toast.MakeText(this, "Cya Next Time!", ToastLength.Short).Show();
                         return true;
                     }

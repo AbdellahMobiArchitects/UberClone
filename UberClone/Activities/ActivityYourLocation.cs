@@ -109,14 +109,17 @@ namespace UberClone.Activities
             if (requestactive == false)
             {
                 var userrequest = await GetThisUserRequest();
-                requestactive = true;
-                tvinfo.Text = "Finding UberDriver...";
-                button_requestuber.Text = "Cancel Uber";
-                thisrequestdriverusername = userrequest.Item1.driver_usename;
-                if (!string.IsNullOrEmpty(thisrequestdriverusername))
+                if (userrequest.Item2)
                 {
-                    tvinfo.Text = "Your Driver Is Cumming";
-                    button_requestuber.Visibility = ViewStates.Invisible;
+                    requestactive = true;
+                    tvinfo.Text = "Finding UberDriver...";
+                    button_requestuber.Text = "Cancel Uber";
+                    thisrequestdriverusername = userrequest.Item1.driver_usename;
+                    if (!string.IsNullOrEmpty(thisrequestdriverusername))
+                    {
+                        tvinfo.Text = "Your Driver Is Cumming";
+                        button_requestuber.Visibility = ViewStates.Invisible;
+                    }
                 }
             }
 
@@ -174,6 +177,7 @@ namespace UberClone.Activities
                         mMap.MoveCamera(CameraUpdateFactory.NewLatLngBounds(builder.Build(), 100));
                     }
                 }
+
                 var result_update = await UpdateUserRequestLocationInDB();
                 if (result_update.Item1)
                 {
@@ -260,7 +264,13 @@ namespace UberClone.Activities
                 var requestparameters = new NameValueCollection();
                 requestparameters.Add("username", Settings.Username);
 
-                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_users, HttpVerbs.GET, requestparameters, null);
+                var result = await RestHelper.APIRequest<Request>(
+                    AppUrls.api_url_GetThisUserRequest,
+                    HttpVerbs.GET,
+                    requestparameters,
+                    null);
+
+
                 if (result.Item1 != null & result.Item2)
                 {
                     return new Tuple<Request, bool, string>(result.Item1, result.Item2, result.Item3);

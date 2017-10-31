@@ -16,6 +16,8 @@ namespace UberClone
     {
        internal static string api_url = "http://192.168.1.102:6969/api/";
         internal static string api_url_users = api_url + "users/";
-        internal static string api_url_requests = api_url + "requests/";
+        internal static string api_url_requests = api_url + "requests/"; 
+        internal static string api_url_GetThisUserRequest = api_url_requests + "GetThisUserRequest/";
+        internal static string api_url_GetRequestsWithoutDriver = api_url_requests + "GetRequestsWithoutDriver/";
     }
 }
