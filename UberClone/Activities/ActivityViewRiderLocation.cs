@@ -152,16 +152,7 @@ namespace UberClone.Activities
                 }
                 else
                 {
-                    Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                    Android.App.AlertDialog alert = dialog.Create();
-                    alert.SetTitle("Information!");
-                    alert.SetMessage("Couldn't Locate Client Position");
-                    alert.SetIcon(Resource.Drawable.alert);
-                    alert.SetButton("OK", (c, ev) =>
-                    {
-
-                    });
-                    alert.Show();
+                    Toast.MakeText(this, "Couldn't Locate Client Position", ToastLength.Short);
                 }
 
                 if (markers.Count > 0)

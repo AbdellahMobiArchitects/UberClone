@@ -42,7 +42,7 @@ namespace UberClone.Activities
         }
         private async void Button_getstarted_Click(object sender, EventArgs e)
         {
-
+            button_getstarted.Enabled = false;
             if (switch_usertype.Checked)
             {
                 RiderOrDriver = switch_usertype.TextOn;
@@ -94,7 +94,7 @@ namespace UberClone.Activities
                 }
                 
             }
-
+            button_getstarted.Enabled = true;
         }
         private void RedirectUser(Type activity)
         {
