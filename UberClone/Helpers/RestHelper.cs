@@ -47,20 +47,21 @@ namespace UberClone.Helpers
                         default:
                             break;
                     }
-
-                   
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        return new Tuple<T, bool, string>(default(T), false, response.ReasonPhrase);
+                    }
                     if (response.IsSuccessStatusCode)
                     {
                         var stringResponseJson = await response.Content.ReadAsStringAsync();
 
                         T result = JsonConvert.DeserializeObject<T>(stringResponseJson);
-                       
-                            return new Tuple<T, bool, string>(result, true, response.StatusCode + " " + response.ReasonPhrase);
-                        
+
+                        return new Tuple<T, bool, string>(result, true, response.ReasonPhrase);
                     }
                     else
                     {
-                        return new Tuple<T, bool, string>(default(T), false, response.StatusCode + " " + response.ReasonPhrase);
+                        return new Tuple<T, bool, string>(default(T), false, "Error In API Request");
                     }
 
                     
@@ -68,7 +69,7 @@ namespace UberClone.Helpers
             }
             catch (Exception ex)
             {
-                return new Tuple<T, bool, string>(default(T), false,ex.InnerException.Message);
+                return new Tuple<T, bool, string>(default(T), false,"Exception: "+ex.InnerException.Message);
             }
         }
 

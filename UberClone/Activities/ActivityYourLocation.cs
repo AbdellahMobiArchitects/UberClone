@@ -33,7 +33,7 @@ namespace UberClone.Activities
         GoogleMap mMap; //Null if google apk services isn't available...
         LocationManager locationmanager;
         string provider;
-       public Location location;
+        public Location location;
         CameraUpdate camera;
         string thisrequestdriverusername = null;
         Button button_requestuber, button_zoomin, button_zoomout;
@@ -45,6 +45,9 @@ namespace UberClone.Activities
 
         List<Marker> markers = new List<Marker>();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+        
+
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -59,9 +62,12 @@ namespace UberClone.Activities
             button_zoomin.Click += Button_zoomin_Click;
             button_zoomout.Click += Button_zoomout_Click;
 
-            SetUpMapIfNeeded();
-        }
+            //handler 5sec
 
+            SetUpMapIfNeeded();
+
+           
+        }
         private async void Button_zoomout_Click(object sender, EventArgs e)
         {
             var latlng = new LatLng(location.Latitude, location.Longitude);
@@ -100,15 +106,26 @@ namespace UberClone.Activities
             provider = locationmanager.GetBestProvider(new Criteria(), false);
             locationmanager.RequestLocationUpdates(provider, 400, 1, this);
             UpdateLocation();
+
+            Handler handler = new Handler();
+            Action act = new Action(RefreshLocation);
+            Java.Lang.Runnable run = new Java.Lang.Runnable(act);
+            handler.PostDelayed(act, 6000);
+
+            RefreshLocation();
         }
-        private async void UpdateLocation()
+        private void UpdateLocation()
         {
             mMap.Clear();
             location = locationmanager.GetLastKnownLocation(provider);
+        }
 
+        public async void RefreshLocation()
+        {
             if (requestactive == false)
             {
-                var userrequest = await GetThisUserRequest();
+                Tuple<Request,bool,string> userrequest = await GetThisUserRequest();
+
                 if (userrequest.Item2)
                 {
                     requestactive = true;
@@ -144,11 +161,11 @@ namespace UberClone.Activities
             {
                 if (!String.IsNullOrEmpty(thisrequestdriverusername))
                 {
-                    var result = await GetRequestDriverLocation();
-                    if (result.Item1 != default(User) && result.Item1 != null)
+                    Tuple<User, bool, string> result_getdl = await GetRequestDriverLocation();
+                    if (result_getdl.Item1 != default(User) && result_getdl.Item1 != null)
                     {
-                        mydriverlocation.Longitude = (double)result.Item1.user_longitude;
-                        mydriverlocation.Latitude = (double)result.Item1.user_latitude;
+                        mydriverlocation.Longitude = (double)result_getdl.Item1.user_longitude;
+                        mydriverlocation.Latitude = (double)result_getdl.Item1.user_latitude;
                     }
 
 
@@ -178,7 +195,7 @@ namespace UberClone.Activities
                     }
                 }
 
-                var result_update = await UpdateUserRequestLocationInDB();
+                Tuple<bool, string> result_update = await UpdateUserRequestLocationInDB();
                 if (result_update.Item1)
                 {
                     Toast.MakeText(this, result_update.Item2, ToastLength.Short);
@@ -189,11 +206,8 @@ namespace UberClone.Activities
                 }
 
             }
-
-           
-
-
         }
+
         #region Request Uber Button Click
         private async void button_requestuber_Click(object sender, EventArgs e)
         {
@@ -254,31 +268,21 @@ namespace UberClone.Activities
 
         #region GetThisUserRequest
 
-        public async Task<Tuple<Request,bool,string>> GetThisUserRequest()
+        public async Task<Tuple<Request, bool, string>> GetThisUserRequest()
         {
             //check internet first
             if (CrossConnectivity.Current.IsConnected)
             {
                 //internet available, get this user's request
 
-                var requestparameters = new NameValueCollection();
-                requestparameters.Add("username", Settings.Username);
-
-                var result = await RestHelper.APIRequest<Request>(
-                    AppUrls.api_url_GetThisUserRequest,
-                    HttpVerbs.GET,
-                    requestparameters,
-                    null);
-
-
-                if (result.Item1 != null & result.Item2)
+                var getparams = new NameValueCollection
                 {
-                    return new Tuple<Request, bool, string>(result.Item1, result.Item2, result.Item3);
-                }
-                else
-                {
-                    return new Tuple<Request, bool, string>(result.Item1, result.Item2, result.Item3);
-                }
+                    { "username", Settings.Username }
+                };
+
+                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_GetThisUserRequest,HttpVerbs.GET);
+
+                return new Tuple<Request, bool, string>(result.Item1, result.Item2, result.Item3);
             }
             else
             {
@@ -304,7 +308,7 @@ namespace UberClone.Activities
                      new KeyValuePair<string, string>("requester_longitude", location.Longitude.ToString()),
                      new KeyValuePair<string, string>("requester_latitude", location.Latitude.ToString())
                  });
-                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests+Settings.User_ID, HttpVerbs.PUT, null,null, requestparameters);
+                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests + Settings.User_ID, HttpVerbs.PUT, null, null, requestparameters);
                 if (result.Item2)
                 {
                     return new Tuple<bool, string>(result.Item2, result.Item3);

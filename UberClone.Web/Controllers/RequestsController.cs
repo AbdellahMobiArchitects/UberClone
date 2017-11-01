@@ -22,12 +22,14 @@ namespace UberClone.Web.Controllers
         {
             return db.Requests;
         }
-        // GET: api/Requests/GetRequestsWithoutDriver
+        // GET: api/Requests/GetThisUserRequest
         [Route("api/Requests/GetThisUserRequest")]
         [HttpGet]
-        public IQueryable<Requests> GetThisUserRequest(string username)
+        public async Task<Requests> GetThisUserRequest(string username)
         {
-            return db.Requests.Where(x => x.requester_username == username);
+            List<Requests> requests = await  db.Requests.Where(x => x.requester_username == username).ToListAsync<Requests>();
+            
+            return requests.FirstOrDefault<Requests>();
         }
 
         // GET: api/Requests/GetRequestsWithoutDriver

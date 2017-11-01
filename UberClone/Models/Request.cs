@@ -23,11 +23,11 @@ namespace UberClone.Models
         public override string ToString()
         {
             return (
-                "Request ID" + request_id +
-                "Requester Username" + requester_username +
-                "Requester Longitude" + requester_longitude +
-                "Requester Latitude" + requester_latitude +
-                "Driver Name" + driver_usename
+                "Request ID: " + request_id + "\n" +
+                "Requester Username: " + requester_username + "\n" +
+                "Requester Longitude: " + requester_longitude + "\n" +
+                "Requester Latitude: " + requester_latitude + "\n" +
+                "Driver Name: " + driver_usename
                 );
         }
     }
