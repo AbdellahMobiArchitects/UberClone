@@ -120,6 +120,7 @@ namespace UberClone.Activities
         {
             if (requestactive == false)
             {
+                // api getuserrequest
                 Tuple<Request,bool,string> userrequest = await GetThisUserRequest();
 
                 if (userrequest.Item2)
@@ -128,6 +129,7 @@ namespace UberClone.Activities
                     tvinfo.Text = "Finding UberDriver...";
                     button_requestuber.Text = "Cancel Uber";
                     thisrequestdriverusername = userrequest.Item1.driver_usename;
+                    Settings.Driver_Username = userrequest.Item1.driver_usename;
                     if (!string.IsNullOrEmpty(thisrequestdriverusername))
                     {
                         tvinfo.Text = "Your Driver Is Cumming";
@@ -138,7 +140,17 @@ namespace UberClone.Activities
 
             if (String.IsNullOrEmpty(thisrequestdriverusername))
             {
-                if (location != null)
+                Tuple<Request, bool, string> userrequest = await GetThisUserRequest();
+
+                if (userrequest.Item2)
+                {
+                    if (!String.IsNullOrEmpty(userrequest.Item1.driver_usename))
+                    {
+                        thisrequestdriverusername = userrequest.Item1.driver_usename;
+                        Settings.Driver_Username = userrequest.Item1.driver_usename;
+                    }
+                }
+                    if (location != null)
                 {
                     LatLng latlng = new LatLng(location.Latitude, location.Longitude);
                     MarkerOptions options = new MarkerOptions()
@@ -157,9 +169,11 @@ namespace UberClone.Activities
             {
                 if (!String.IsNullOrEmpty(thisrequestdriverusername))
                 {
+                    //api get user where username == driver username
                     Tuple<User, bool, string> result_getdl = await GetRequestDriverLocation();
-                    if (result_getdl.Item1 != default(User) && result_getdl.Item1 != null)
+                    if (result_getdl.Item2)
                     {
+                        Settings.Driver_Username = result_getdl.Item1.username;
                         mydriverlocation.Longitude = (double)result_getdl.Item1.user_longitude;
                         mydriverlocation.Latitude = (double)result_getdl.Item1.user_latitude;
                     }
@@ -190,16 +204,16 @@ namespace UberClone.Activities
                         mMap.MoveCamera(CameraUpdateFactory.NewLatLngBounds(builder.Build(), 100));
                     }
                 }
-
-                //Tuple<bool, string> result_update = await UpdateUserRequestLocationInDB();
-                //if (result_update.Item1)
-                //{
-                //    Toast.MakeText(this, result_update.Item2, ToastLength.Short);
-                //}
-                //if (!result_update.Item1)
-                //{
-                //    Toast.MakeText(this, result_update.Item2, ToastLength.Short);
-                //}
+                // api updateuserlocation in request
+                Tuple<bool, string> result_update = await UpdateUserRequestLocationInDB();
+                if (result_update.Item1)
+                {
+                    Toast.MakeText(this, result_update.Item2, ToastLength.Short);
+                }
+                if (!result_update.Item1)
+                {
+                    Toast.MakeText(this, result_update.Item2, ToastLength.Short);
+                }
 
             }
             handler.PostDelayed(new Java.Lang.Runnable(act), 5000);
@@ -210,6 +224,7 @@ namespace UberClone.Activities
         {
             if (!requestactive)
             {
+                //api save user
                 /*create request save to db*/
                 var saveresult = await SaveUsersRequest();
                 requestactive = true;
@@ -220,6 +235,7 @@ namespace UberClone.Activities
             }
             else
             {
+                // api deleteuser
                 /*remove request from db*/
                 var saveresult = await DeleteUserRequest();
                 requestactive = false;
@@ -249,6 +265,10 @@ namespace UberClone.Activities
                 if (result.Item1 != null & result.Item2)
                 {
                     Settings.Request_ID = result.Item1.request_id.ToString();
+                    Settings.Requester_Username = result.Item1.requester_username;
+                    Settings.Requester_Longitude = result.Item1.requester_longitude.ToString(CultureInfo.InvariantCulture);
+                    Settings.Requester_Latitude = result.Item1.requester_latitude.ToString(CultureInfo.InvariantCulture);
+                    Settings.Driver_Username = result.Item1.driver_usename;
                     return new Tuple<bool, string>(result.Item2, result.Item3);
                 }
                 else
@@ -293,36 +313,33 @@ namespace UberClone.Activities
 
         #region UpdateUserLocationInDB
 
-        //private async Task<Tuple<bool, string>> UpdateUserRequestLocationInDB()
-        //{
-            ////check internet first
-            //if (CrossConnectivity.Current.IsConnected)
-            //{
-            //    //internet available, setting up locals & save 'em to db
+        private async Task<Tuple<bool, string>> UpdateUserRequestLocationInDB()
+        {
+            //check internet first
+            if (CrossConnectivity.Current.IsConnected)
+            {
+                //internet available, setting up locals & save 'em to db
 
-            //    var requestparameters = new FormUrlEncodedContent(new[]
-            //   {
+                var reqlong = location.Longitude.ToString(CultureInfo.InvariantCulture);
+                var reqlat = location.Latitude.ToString(CultureInfo.InvariantCulture);
+                var paramss = new FormUrlEncodedContent(new[]
+               {
+                     new KeyValuePair<string, string>("request_id",Settings.Request_ID),
+                     new KeyValuePair<string, string>("requester_username",Settings.Username),
+                     new KeyValuePair<string, string>("requester_longitude",reqlong),
+                     new KeyValuePair<string, string>("requester_latitude", reqlat),
+                     new KeyValuePair<string, string>("driver_usename", Settings.Driver_Username)
+                 });
+                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests + Settings.Request_ID, HttpVerbs.PUT, null, null, paramss);
 
-            //        new KeyValuePair<string, string>("requester_username",Settings.Username),
-            //         new KeyValuePair<string, string>("requester_longitude", location.Longitude.ToString(CultureInfo.InvariantCulture)),
-            //         new KeyValuePair<string, string>("requester_latitude", location.Latitude.ToString(CultureInfo.InvariantCulture))
-            //     });
-            //    var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests + Settings.User_ID, HttpVerbs.PUT, null, null, requestparameters);
-            //    if (result.Item2)
-            //    {
-            //        return new Tuple<bool, string>(result.Item2, result.Item3);
-            //    }
-            //    else
-            //    {
-            //        return new Tuple<bool, string>(result.Item2, result.Item3);
-            //    }
-            //}
-            //else
-            //{
-            //    //internet not available, user tries again later
-            //    return new Tuple<bool, string>(false, "No Internet Connection, Cannot Sync Your Location With Our Database");
-            //}
-        //}
+                    return new Tuple<bool, string>(result.Item2, result.Item3);
+            }
+            else
+            {
+                //internet not available, user tries again later
+                return new Tuple<bool, string>(false, "No Internet Connection, Cannot Sync Your Location With Our Database");
+            }
+        }
 
         #endregion
 
@@ -382,18 +399,15 @@ namespace UberClone.Activities
             {
                 //internet available, setting up locals & getting this user's very own request
 
-                var requestparameters = new NameValueCollection();
-                requestparameters.Add("username", thisrequestdriverusername);
+                var paramss = new NameValueCollection
+                {
+                    { "username", thisrequestdriverusername }
+                };
 
-                var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users, HttpVerbs.GET, requestparameters, null);
-                if (result.Item1 != null & result.Item2)
-                {
+                var result = await RestHelper.APIRequest<User>(AppUrls.api_url_GetThisUser, HttpVerbs.GET, paramss, null,null);
+
                     return new Tuple<User, bool, string>(result.Item1, result.Item2, result.Item3);
-                }
-                else
-                {
-                    return new Tuple<User, bool, string>(result.Item1, result.Item2, result.Item3);
-                }
+                
             }
             else
             {

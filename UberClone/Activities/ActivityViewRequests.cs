@@ -68,23 +68,27 @@ namespace UberClone.Activities
             var selecteditem = lvrequests.GetItemAtPosition(e.Position);
             Intent i = new Intent(this, typeof(ActivityViewRiderLocation));
 
-                var selectedrequest = reqs.ElementAt(e.Position);
-                i.PutExtra("username", selectedrequest.requester_username);
-                i.PutExtra("latitude", selectedrequest.requester_latitude);
-                i.PutExtra("longitude", selectedrequest.requester_longitude);
-                StartActivity(i);
+            var selectedrequest = reqs.ElementAt(e.Position);
+            i.PutExtra("request_id", selectedrequest.request_id);
+            i.PutExtra("username", selectedrequest.requester_username);
+            i.PutExtra("longitude", selectedrequest.requester_longitude);
+            i.PutExtra("latitude", selectedrequest.requester_latitude);
+            i.PutExtra("driver_usename", selectedrequest.driver_usename);
 
-    }
-         
 
-     
-       
+            StartActivity(i);
+
+        }
+
+
+
+
         private void UpdateLocation()
         {
             location = locationmanager.GetLastKnownLocation(provider);
             FillListView();
             SetMyLocation();
-           
+
         }
         //1er Api
         private async void FillListView()

@@ -36,8 +36,9 @@ namespace UberClone.Activities
 
         Button acceptrequest, buttonback;
 
-        double riderlongitude, riderlatitude;
-        string riderusername;
+        int request_id;
+        double requesterlongitude, requesterlatitude;
+        string requesterusername, driverusername;
 
         List<Marker> markers = new List<Marker>();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
@@ -51,10 +52,12 @@ namespace UberClone.Activities
                 SetContentView(Resource.Layout.Layout_ActivityViewRiderLocation);
                 buttonback = FindViewById<Button>(Resource.Id.button_back);
                 acceptrequest = FindViewById<Button>(Resource.Id.button_acceptrequest);
+                request_id = Intent.GetIntExtra("request_id", 0);
+                requesterusername = Intent.GetStringExtra("username");
+                requesterlatitude = Intent.GetDoubleExtra("latitude", 0);
+                requesterlongitude = Intent.GetDoubleExtra("longitude", 0);
+                driverusername = Intent.GetStringExtra("driver_usename");
 
-                riderusername = Intent.GetStringExtra("username");
-                riderlatitude = Intent.GetDoubleExtra("latitude", 0);
-                riderlongitude = Intent.GetDoubleExtra("longitude", 0);
 
                 SetUpMapIfNeeded();
                 locationmanager = (LocationManager)GetSystemService(Context.LocationService);
@@ -92,7 +95,7 @@ namespace UberClone.Activities
             if (result.Item1)
             {
                 Intent intent = new Intent(Intent.ActionView,
-               Android.Net.Uri.Parse("http://maps.google.com/maps?daddr=" + riderlatitude.ToString(CultureInfo.InvariantCulture) + "," + riderlongitude.ToString(CultureInfo.InvariantCulture)));
+               Android.Net.Uri.Parse("http://maps.google.com/maps?daddr=" + requesterlatitude.ToString(CultureInfo.InvariantCulture) + "," + requesterlongitude.ToString(CultureInfo.InvariantCulture)));
                 StartActivity(intent);
             }
         }
@@ -103,22 +106,22 @@ namespace UberClone.Activities
             if (CrossConnectivity.Current.IsConnected)
             {
                 //internet available, setting up locals & save 'em to db
-
-                var requestparameters = new FormUrlEncodedContent(new[]
+                string requestid = request_id.ToString();
+                string reqLong = requesterlongitude.ToString(CultureInfo.InvariantCulture);
+                string reqlat = requesterlatitude.ToString(CultureInfo.InvariantCulture);
+                string myusername = Settings.Username;
+                FormUrlEncodedContent paramss = new FormUrlEncodedContent(new[]
                {
-                    new KeyValuePair<string, string>("requester_username",riderusername),
-                    new KeyValuePair<string, string>("driver_usename",Settings.Username)
+                    new KeyValuePair<string, string>("request_id",requestid),
+                    new KeyValuePair<string, string>("requester_username",requesterusername),
+                    new KeyValuePair<string, string>("requester_longitude",reqLong),
+                    new KeyValuePair<string, string>("requester_latitude",reqlat),
+                    new KeyValuePair<string, string>("driver_usename",myusername)
 
                  });
-                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests, HttpVerbs.POST, null, requestparameters);
-                if (result.Item1 != null & result.Item2)
-                {
+                    Tuple<Request,bool,string> result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests+requestid, HttpVerbs.PUT, null,null, paramss);
+
                     return new Tuple<bool, string>(result.Item2, result.Item3);
-                }
-                else
-                {
-                    return new Tuple<bool, string>(result.Item2, result.Item3);
-                }
             }
             else
             {
@@ -183,9 +186,9 @@ namespace UberClone.Activities
                     });
                     alert.Show();
                 }
-                if (riderlatitude!=0 & riderlongitude!=0)
+                if (requesterlatitude != 0 & requesterlongitude != 0)
                 {
-                    LatLng riderlatlng = new LatLng(riderlatitude, riderlongitude);
+                    LatLng riderlatlng = new LatLng(requesterlatitude, requesterlongitude);
                     markers.Add(mMap.AddMarker(new MarkerOptions()
                         .SetIcon(BitmapDescriptorFactory
                         .DefaultMarker(BitmapDescriptorFactory.HueBlue))

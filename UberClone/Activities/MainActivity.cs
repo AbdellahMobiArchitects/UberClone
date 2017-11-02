@@ -190,6 +190,8 @@ namespace UberClone.Activities
                  //base.OnBackPressed();
                  if (await DeleteUser())
                  {
+                     Settings.ClearUserLocalVars();
+                     Settings.ClearRequestLocalVars();
                      int pid = Android.OS.Process.MyPid();
                      if (Android.OS.Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
                      {
@@ -262,21 +264,32 @@ namespace UberClone.Activities
                 {
                     //attempting user deletion from db
                     string url = AppUrls.api_url_users + Settings.User_ID;
-                    var httpClient = new HttpClient();
-                    var response = await httpClient.DeleteAsync(url);
-                    if (response.IsSuccessStatusCode)
+                    using (HttpClient clt = new HttpClient())
                     {
-                        //successful attempt, cleaning local variables as well
-                        //Settings.ClearUserLocalVars();
-                        Toast.MakeText(this, "Cya Next Time!", ToastLength.Short).Show();
-                        return true;
+                        var userindb = await clt.GetAsync(url);
+                        if (userindb.IsSuccessStatusCode)
+                        {
+                            var response = await clt.DeleteAsync(url);
+                            if (response.IsSuccessStatusCode)
+                            {
+                                //successful attempt, cleaning local variables as well
+                                //Settings.ClearUserLocalVars();
+                                Toast.MakeText(this, "Cya Next Time!", ToastLength.Short).Show();
+                                return true;
+                            }
+                            else
+                            {
+                                //failed attempt, app stays open for now
+                                Toast.MakeText(this, "Error deleting user from db", ToastLength.Long).Show();
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return true;
+                        }
                     }
-                    else
-                    {
-                        //failed attempt, app stays open for now
-                        Toast.MakeText(this, "Error deleting user from db", ToastLength.Long).Show();
-                        return false;
-                    }
+                   
                 }
                 else
                 {
@@ -286,7 +299,7 @@ namespace UberClone.Activities
             }
             else
             {
-                return false;
+                return true;
             }
         }
 

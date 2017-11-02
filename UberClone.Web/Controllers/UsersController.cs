@@ -36,6 +36,16 @@ namespace UberClone.Web.Controllers
             return Ok(users);
         }
 
+        // GET: api/Users/GetThisUser
+        [Route("api/Users/GetThisUser")]
+        [HttpGet]
+        public async Task<Users> GetThisUserRequest(string username)
+        {
+            List<Users> user = await db.Users.Where(x => x.username == username).ToListAsync<Users>();
+
+            return user.FirstOrDefault<Users>();
+        }
+
         // PUT: api/Users/5
         [ResponseType(typeof(void))]
         [AcceptVerbs("POST","PUT")]
