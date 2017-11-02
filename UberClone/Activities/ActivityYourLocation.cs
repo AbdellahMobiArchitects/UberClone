@@ -23,11 +23,12 @@ using UberClone.Helpers;
 using UberClone.Models;
 using System.Net.Http;
 using System.Collections.Specialized;
+using System.Globalization;
 
 namespace UberClone.Activities
 {
     [Activity(Label = "Current Location", ScreenOrientation = ScreenOrientation.Portrait)]
-    public class ActivityYourLocation : FragmentActivity, ILocationListener, IOnMapReadyCallback
+    public class ActivityYourLocation : FragmentActivity, ILocationListener, IOnMapReadyCallback, GoogleMap.IOnMapLoadedCallback
     {
 
         GoogleMap mMap; //Null if google apk services isn't available...
@@ -46,8 +47,9 @@ namespace UberClone.Activities
         List<Marker> markers = new List<Marker>();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-        
 
+        Handler handler = new Handler();
+        Action act;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -106,18 +108,12 @@ namespace UberClone.Activities
             provider = locationmanager.GetBestProvider(new Criteria(), false);
             locationmanager.RequestLocationUpdates(provider, 400, 1, this);
             UpdateLocation();
-
-            Handler handler = new Handler();
-            Action act = new Action(RefreshLocation);
-            Java.Lang.Runnable run = new Java.Lang.Runnable(act);
-            handler.PostDelayed(act, 6000);
-
-            RefreshLocation();
         }
         private void UpdateLocation()
         {
             mMap.Clear();
             location = locationmanager.GetLastKnownLocation(provider);
+            mMap.SetOnMapLoadedCallback(this);
         }
 
         public async void RefreshLocation()
@@ -195,17 +191,18 @@ namespace UberClone.Activities
                     }
                 }
 
-                Tuple<bool, string> result_update = await UpdateUserRequestLocationInDB();
-                if (result_update.Item1)
-                {
-                    Toast.MakeText(this, result_update.Item2, ToastLength.Short);
-                }
-                if (!result_update.Item1)
-                {
-                    Toast.MakeText(this, result_update.Item2, ToastLength.Short);
-                }
+                //Tuple<bool, string> result_update = await UpdateUserRequestLocationInDB();
+                //if (result_update.Item1)
+                //{
+                //    Toast.MakeText(this, result_update.Item2, ToastLength.Short);
+                //}
+                //if (!result_update.Item1)
+                //{
+                //    Toast.MakeText(this, result_update.Item2, ToastLength.Short);
+                //}
 
             }
+            handler.PostDelayed(new Java.Lang.Runnable(act), 5000);
         }
 
         #region Request Uber Button Click
@@ -243,9 +240,10 @@ namespace UberClone.Activities
 
                 var requestparameters = new FormUrlEncodedContent(new[]
                {
-                     new KeyValuePair<string, string>("requester_username", Settings.Username),
-                     new KeyValuePair<string, string>("user_longitude", location.Longitude.ToString()),
-                     new KeyValuePair<string, string>("user_latitude", location.Latitude.ToString())
+                    new KeyValuePair<string, string>("requester_username",Settings.Username),
+                     new KeyValuePair<string, string>("requester_longitude", location.Longitude.ToString(CultureInfo.InvariantCulture)),
+                     new KeyValuePair<string, string>("requester_latitude", location.Latitude.ToString(CultureInfo.InvariantCulture))
+
                  });
                 var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests, HttpVerbs.POST, null, requestparameters);
                 if (result.Item1 != null & result.Item2)
@@ -295,35 +293,36 @@ namespace UberClone.Activities
 
         #region UpdateUserLocationInDB
 
-        private async Task<Tuple<bool, string>> UpdateUserRequestLocationInDB()
-        {
-            //check internet first
-            if (CrossConnectivity.Current.IsConnected)
-            {
-                //internet available, setting up locals & save 'em to db
+        //private async Task<Tuple<bool, string>> UpdateUserRequestLocationInDB()
+        //{
+            ////check internet first
+            //if (CrossConnectivity.Current.IsConnected)
+            //{
+            //    //internet available, setting up locals & save 'em to db
 
-                var requestparameters = new FormUrlEncodedContent(new[]
-               {
-                    new KeyValuePair<string, string>("requester_username",Settings.Username),
-                     new KeyValuePair<string, string>("requester_longitude", location.Longitude.ToString()),
-                     new KeyValuePair<string, string>("requester_latitude", location.Latitude.ToString())
-                 });
-                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests + Settings.User_ID, HttpVerbs.PUT, null, null, requestparameters);
-                if (result.Item2)
-                {
-                    return new Tuple<bool, string>(result.Item2, result.Item3);
-                }
-                else
-                {
-                    return new Tuple<bool, string>(result.Item2, result.Item3);
-                }
-            }
-            else
-            {
-                //internet not available, user tries again later
-                return new Tuple<bool, string>(false, "No Internet Connection, Cannot Sync Your Location With Our Database");
-            }
-        }
+            //    var requestparameters = new FormUrlEncodedContent(new[]
+            //   {
+
+            //        new KeyValuePair<string, string>("requester_username",Settings.Username),
+            //         new KeyValuePair<string, string>("requester_longitude", location.Longitude.ToString(CultureInfo.InvariantCulture)),
+            //         new KeyValuePair<string, string>("requester_latitude", location.Latitude.ToString(CultureInfo.InvariantCulture))
+            //     });
+            //    var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests + Settings.User_ID, HttpVerbs.PUT, null, null, requestparameters);
+            //    if (result.Item2)
+            //    {
+            //        return new Tuple<bool, string>(result.Item2, result.Item3);
+            //    }
+            //    else
+            //    {
+            //        return new Tuple<bool, string>(result.Item2, result.Item3);
+            //    }
+            //}
+            //else
+            //{
+            //    //internet not available, user tries again later
+            //    return new Tuple<bool, string>(false, "No Internet Connection, Cannot Sync Your Location With Our Database");
+            //}
+        //}
 
         #endregion
 
@@ -422,6 +421,12 @@ namespace UberClone.Activities
         public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
         {
             Android.Util.Log.Info("UberCloneApp", "Status Changed");
+        }
+
+        public void OnMapLoaded()
+        {
+            act = new Action(RefreshLocation);
+            RefreshLocation();
         }
     }
 }

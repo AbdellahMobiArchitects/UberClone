@@ -17,6 +17,7 @@ using System.Net.Http.Headers;
 using Android.Support.V4.App;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 
 namespace UberClone.Activities
 {
@@ -41,11 +42,11 @@ namespace UberClone.Activities
 
             button_getstarted.Click += Button_getstarted_Click;
         }
+
         private async void Button_getstarted_Click(object sender, EventArgs e)
         {
+            //disable input
             button_getstarted.Enabled = false;
-
-           
 
             //client is rider
             if (!switch_usertype.Checked)
@@ -61,7 +62,7 @@ namespace UberClone.Activities
                         //Re-Assign();
                         Settings.User_ID = getresult.Item1.user_id.ToString();
                         Settings.Username = getresult.Item1.username;
-                        Settings.Usertype = getresult.Item1.usertype;
+                        Settings.Usertype = RiderOrDriver;
                         Settings.User_Longitude = getresult.Item1.user_longitude.ToString();
                         Settings.User_Latitude = getresult.Item1.user_latitude.ToString();
                         //Redirect();
@@ -75,23 +76,14 @@ namespace UberClone.Activities
                         {
                             Settings.User_ID = saveresult.Item1.user_id.ToString();
                             Settings.Username = saveresult.Item1.username;
-                            Settings.Usertype = saveresult.Item1.usertype;
+                            Settings.Usertype = RiderOrDriver;
                             Settings.User_Longitude = saveresult.Item1.user_longitude.ToString();
                             Settings.User_Latitude = saveresult.Item1.user_latitude.ToString();
                             RedirectUser(typeof(ActivityYourLocation));
                         }
                         if (!saveresult.Item2)
                         {
-                            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                            Android.App.AlertDialog alert = dialog.Create();
-                            alert.SetTitle("Information!");
-                            alert.SetMessage("Couldn't Add You To Database");
-                            alert.SetIcon(Resource.Drawable.alert);
-                            alert.SetButton("OK", (c, ev) =>
-                            {
-
-                            });
-                            alert.Show();
+                            Toast.MakeText(this, "Error adding "+RiderOrDriver, ToastLength.Short);
                         }
                     }
                 }
@@ -102,23 +94,14 @@ namespace UberClone.Activities
                     {
                         Settings.User_ID = saveresult.Item1.user_id.ToString();
                         Settings.Username = saveresult.Item1.username;
-                        Settings.Usertype = saveresult.Item1.usertype;
+                        Settings.Usertype = RiderOrDriver;
                         Settings.User_Longitude = saveresult.Item1.user_longitude.ToString();
                         Settings.User_Latitude = saveresult.Item1.user_latitude.ToString();
                         RedirectUser(typeof(ActivityYourLocation));
                     }
                     if (!saveresult.Item2)
                     {
-                        Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                        Android.App.AlertDialog alert = dialog.Create();
-                        alert.SetTitle("Information!");
-                        alert.SetMessage("Couldn't Add You To Database");
-                        alert.SetIcon(Resource.Drawable.alert);
-                        alert.SetButton("OK", (c, ev) =>
-                        {
-
-                        });
-                        alert.Show();
+                        Toast.MakeText(this, "Error adding " + RiderOrDriver, ToastLength.Short);
                     }
                 }
 
@@ -135,23 +118,14 @@ namespace UberClone.Activities
                     {
                         Settings.User_ID = saveresult.Item1.user_id.ToString();
                         Settings.Username = saveresult.Item1.username;
-                        Settings.Usertype = saveresult.Item1.usertype;
+                        Settings.Usertype = RiderOrDriver;
                         Settings.User_Longitude = saveresult.Item1.user_longitude.ToString();
                         Settings.User_Latitude = saveresult.Item1.user_latitude.ToString();
                         RedirectUser(typeof(ActivityViewRequests));
                     }
                     if (!saveresult.Item2)
                     {
-                        Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                        Android.App.AlertDialog alert = dialog.Create();
-                        alert.SetTitle("Information!");
-                        alert.SetMessage("Couldn't Add You To Database");
-                        alert.SetIcon(Resource.Drawable.alert);
-                        alert.SetButton("OK", (c, ev) =>
-                        {
-
-                        });
-                        alert.Show();
+                        Toast.MakeText(this, "Error adding " + RiderOrDriver, ToastLength.Short);
                     }
                 }
                 if (!string.IsNullOrEmpty(Settings.User_ID))
@@ -163,7 +137,7 @@ namespace UberClone.Activities
                         //Re-Assign();
                         Settings.User_ID = getresult.Item1.user_id.ToString();
                         Settings.Username = getresult.Item1.username;
-                        Settings.Usertype = getresult.Item1.usertype;
+                        Settings.Usertype = RiderOrDriver;
                         Settings.User_Longitude = getresult.Item1.user_longitude.ToString();
                         Settings.User_Latitude = getresult.Item1.user_latitude.ToString();
                         //Redirect();
@@ -177,31 +151,22 @@ namespace UberClone.Activities
                         {
                             Settings.User_ID = saveresult.Item1.user_id.ToString();
                             Settings.Username = saveresult.Item1.username;
-                            Settings.Usertype = saveresult.Item1.usertype;
+                            Settings.Usertype = RiderOrDriver;
                             Settings.User_Longitude = saveresult.Item1.user_longitude.ToString();
                             Settings.User_Latitude = saveresult.Item1.user_latitude.ToString();
                             RedirectUser(typeof(ActivityViewRequests));
                         }
                         if (!saveresult.Item2)
                         {
-                            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                            Android.App.AlertDialog alert = dialog.Create();
-                            alert.SetTitle("Information!");
-                            alert.SetMessage("Couldn't Add You To Database");
-                            alert.SetIcon(Resource.Drawable.alert);
-                            alert.SetButton("OK", (c, ev) =>
-                            {
-
-                            });
-                            alert.Show();
+                            Toast.MakeText(this, "Error adding " + RiderOrDriver, ToastLength.Short);
                         }
                     }
                 }
             }
+
+            //enable input
             button_getstarted.Enabled = true;
         }
-
-        
 
         private void RedirectUser(Type activity)
         {
@@ -309,22 +274,13 @@ namespace UberClone.Activities
                     else
                     {
                         //failed attempt, app stays open for now
-                        Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                        Android.App.AlertDialog alert = dialog.Create();
-                        alert.SetTitle("Information!");
-                        alert.SetMessage("Couldn't Clean User From Database!");
-                        alert.SetIcon(Resource.Drawable.alert);
-                        alert.SetButton("OK", (c, ev) =>
-                        {
-
-                        });
-                        alert.Show();
+                        Toast.MakeText(this, "Error deleting user from db", ToastLength.Long).Show();
                         return false;
                     }
                 }
                 else
                 {
-                    Toast.MakeText(this, "No Connection, Couldn't Clean User From Database!", ToastLength.Long).Show();
+                    Toast.MakeText(this, "No Internet", ToastLength.Long).Show();
                     return false;
                 }
             }

@@ -20,6 +20,8 @@ using Android.Util;
 using Android.Support.V4.App;
 using Android.Gms.Maps.Model;
 using Android.Gms.Maps;
+using System.Globalization;
+using Plugin.Connectivity;
 
 namespace UberClone.Activities
 {
@@ -27,13 +29,15 @@ namespace UberClone.Activities
         LaunchMode = Android.Content.PM.LaunchMode.SingleTop)]
     public class ActivityViewRequests : Activity, ILocationListener
     {
-        GoogleMap mMap;
         ListView lvrequests;
         LocationManager locationmanager;
         string provider;
         Location location;
         List<Request> reqs = new List<Request>();
         List<string> list_requests = new List<string>();
+
+        Handler handler = new Handler();
+        Action act;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -50,6 +54,8 @@ namespace UberClone.Activities
 
                 FillListView();
                 lvrequests.ItemClick += Lvrequests_ItemClick;
+
+                act = new Action(FillListView);
             }
             catch (Exception e)
             {
@@ -71,11 +77,20 @@ namespace UberClone.Activities
     }
          
 
-        private async void FillListView()
+     
+       
+        private void UpdateLocation()
         {
             location = locationmanager.GetLastKnownLocation(provider);
+            FillListView();
+            SetMyLocation();
+           
+        }
+        //1er Api
+        private async void FillListView()
+        {
             var requests = await RestHelper.APIRequest<List<Request>>(AppUrls.api_url_GetRequestsWithoutDriver, HttpVerbs.GET, null, null);
-            if (requests.Item1.Count > 0)
+            if (requests.Item2)
             {
                 reqs.Clear();
                 list_requests.Clear();
@@ -83,10 +98,11 @@ namespace UberClone.Activities
                 {
                     if (string.IsNullOrEmpty(i.driver_usename))
                     {
-                        
+
                         var distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, i.requester_longitude, i.requester_latitude);
                         list_requests.Add(distanceinkm.ToString() + " Km");
-                        reqs.Add(new Request {
+                        reqs.Add(new Request
+                        {
                             request_id = i.request_id,
                             requester_username = i.requester_username,
                             driver_usename = i.driver_usename,
@@ -103,20 +119,47 @@ namespace UberClone.Activities
                 Toast.MakeText(this, "No Requests", ToastLength.Short);
             }
 
+            handler.PostDelayed(new Java.Lang.Runnable(act), 5000);
         }
-        //private void RedirectUserExtra(Type activity)
-        //{
-        //    Intent i = new Intent(this, activity);
-        //    i.PutExtra("username","nitro2010");
-        //    i.PutExtra("latitude", 33.542660);
-        //    i.PutExtra("longitude", -7.629246);
-        //    this.StartActivity(i);
-        //}
-        private void UpdateLocation()
+        //2eme Api
+        private async void SetMyLocation()
         {
-            location = locationmanager.GetLastKnownLocation(provider);
-            FillListView();
+            string myLong = location.Longitude.ToString(CultureInfo.InvariantCulture);
+            string myLat = location.Latitude.ToString(CultureInfo.InvariantCulture);
+
+            var paramss = new FormUrlEncodedContent(new[] {
+                 new KeyValuePair<string, string>("user_id",Settings.User_ID),
+                 new KeyValuePair<string, string>("username",Settings.Username),
+                 new KeyValuePair<string, string>("usertype",Settings.Usertype),
+                 new KeyValuePair<string, string>("user_longitude",myLong),
+                 new KeyValuePair<string, string>("user_latitude",myLat)});
+
+            var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users + Settings.User_ID, HttpVerbs.POST, null, paramss);
+            if (!result.Item2)
+            {
+                Toast.MakeText(this, "Update Location Error", ToastLength.Short);
+            }
+            if (result.Item2)
+            {
+                Toast.MakeText(this, "Location Updated", ToastLength.Short);
+            }
+
+            //using (HttpClient clt = new HttpClient())
+            //{
+            //    var response = await clt.PostAsync(AppUrls.api_url_users + Settings.User_ID, paramss);
+
+            //    if (!response.IsSuccessStatusCode)
+            //    {
+            //        Toast.MakeText(this, "Update Location Error", ToastLength.Short);
+            //    }
+            //    if (response.IsSuccessStatusCode)
+            //    {
+            //        Toast.MakeText(this, "Location Updated", ToastLength.Short);
+            //    }
+
+            //}
         }
+
         public void OnLocationChanged(Location location)
         {
             UpdateLocation();

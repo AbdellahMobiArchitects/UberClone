@@ -17,6 +17,11 @@ using Android.Gms.Maps.Model;
 
 using Android.Content.PM;
 using System.Globalization;
+using Plugin.Connectivity;
+using System.Net.Http;
+using UberClone.Helpers;
+using UberClone.Models;
+using System.Threading.Tasks;
 
 namespace UberClone.Activities
 {
@@ -77,12 +82,49 @@ namespace UberClone.Activities
             OnBackPressed();
         }
 
-        private void Acceptrequest_Click(object sender, EventArgs e)
+        private async void Acceptrequest_Click(object sender, EventArgs e)
         {
-                 Intent intent = new Intent(Intent.ActionView,
-
-                Android.Net.Uri.Parse("http://maps.google.com/maps?daddr=" + riderlatitude.ToString(CultureInfo.InvariantCulture) + "," +  riderlongitude.ToString(CultureInfo.InvariantCulture)));
+            var result = await AcceptRequestUpdateRiderRequest();
+            if (!result.Item1)
+            {
+               
+            }
+            if (result.Item1)
+            {
+                Intent intent = new Intent(Intent.ActionView,
+               Android.Net.Uri.Parse("http://maps.google.com/maps?daddr=" + riderlatitude.ToString(CultureInfo.InvariantCulture) + "," + riderlongitude.ToString(CultureInfo.InvariantCulture)));
                 StartActivity(intent);
+            }
+        }
+
+        private async Task<Tuple<bool, string>> AcceptRequestUpdateRiderRequest()
+        {
+            //check internet first
+            if (CrossConnectivity.Current.IsConnected)
+            {
+                //internet available, setting up locals & save 'em to db
+
+                var requestparameters = new FormUrlEncodedContent(new[]
+               {
+                    new KeyValuePair<string, string>("requester_username",riderusername),
+                    new KeyValuePair<string, string>("driver_usename",Settings.Username)
+
+                 });
+                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests, HttpVerbs.POST, null, requestparameters);
+                if (result.Item1 != null & result.Item2)
+                {
+                    return new Tuple<bool, string>(result.Item2, result.Item3);
+                }
+                else
+                {
+                    return new Tuple<bool, string>(result.Item2, result.Item3);
+                }
+            }
+            else
+            {
+                //internet not available, user tries again later
+                return new Tuple<bool, string>(false, "No Internet Connection!");
+            }
         }
 
         public void OnLocationChanged(Location location)
