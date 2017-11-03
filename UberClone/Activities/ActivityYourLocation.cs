@@ -40,13 +40,16 @@ namespace UberClone.Activities
         Button button_requestuber, button_zoomin, button_zoomout;
         TextView tvinfo;
 
-        Location mydriverlocation;
+        LatLng mydriverlocation = new LatLng(0, 0); 
 
         bool requestactive = false;
 
-        List<Marker> markers = new List<Marker>();
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        bool isRefreshLocationCalled = false;
+        
 
+        List<Marker> markers = new List<Marker>();
+
+        LatLngBounds.Builder builder;
 
         Handler handler = new Handler();
         Action act;
@@ -67,8 +70,7 @@ namespace UberClone.Activities
             //handler 5sec
 
             SetUpMapIfNeeded();
-
-           
+            act = new Action(RefreshLocation);
         }
         private async void Button_zoomout_Click(object sender, EventArgs e)
         {
@@ -100,6 +102,7 @@ namespace UberClone.Activities
                 frag.GetMapAsync(this);
 
             }
+            Android.Util.Log.Info("Lift", "SetupMapIfNeeded");
         }
         public void OnMapReady(GoogleMap googleMap)
         {
@@ -108,49 +111,68 @@ namespace UberClone.Activities
             provider = locationmanager.GetBestProvider(new Criteria(), false);
             locationmanager.RequestLocationUpdates(provider, 400, 1, this);
             UpdateLocation();
+            Android.Util.Log.Info("Lift", "OnMapReady");
+            mMap.SetOnMapLoadedCallback(this);
+            
         }
         private void UpdateLocation()
         {
-            mMap.Clear();
             location = locationmanager.GetLastKnownLocation(provider);
-            mMap.SetOnMapLoadedCallback(this);
+            Android.Util.Log.Info("Lift", "UpdateLocation");
+        }
+        public void OnMapLoaded()
+        {
+            
+            if (isRefreshLocationCalled == false)
+            {
+                RefreshLocation();
+                Android.Util.Log.Info("Lift", "OnMapLoadedRefreshLocation");
+            }
+
+            Android.Util.Log.Info("Lift", "OnMapLoadedCallback");
+        }
+
+        public void OnLocationChanged(Location location)
+        {
+            UpdateLocation();
+            Android.Util.Log.Info("Lift", "OnLocationChanged");
+
         }
 
         public async void RefreshLocation()
         {
+            mMap.Clear();
             if (requestactive == false)
             {
                 // api getuserrequest
-                Tuple<Request,bool,string> userrequest = await GetThisUserRequest();
-
-                if (userrequest.Item2)
+                Tuple<Request, bool, string> userrequest = await GetThisUserRequest();
+                Android.Util.Log.Info("Lift", "requestactive false API GetUserRequest " + userrequest.Item2
+                    );
+                if (userrequest.Item1!=null)
                 {
+                    Android.Util.Log.Info("Lift", "API RequestFound");
                     requestactive = true;
                     tvinfo.Text = "Finding UberDriver...";
                     button_requestuber.Text = "Cancel Uber";
-                    thisrequestdriverusername = userrequest.Item1.driver_usename;
-                    Settings.Driver_Username = userrequest.Item1.driver_usename;
-                    if (!string.IsNullOrEmpty(thisrequestdriverusername))
+                    if (!String.IsNullOrEmpty(userrequest.Item1.driver_usename))
                     {
+                        thisrequestdriverusername = userrequest.Item1.driver_usename;
                         tvinfo.Text = "Your Driver Is Cumming";
                         button_requestuber.Visibility = ViewStates.Invisible;
                     }
+                }
+                if (userrequest.Item1 == null)
+                {
+                    Android.Util.Log.Info("Lift", "API RequestEmpty ");
+                    thisrequestdriverusername = "";
+                    tvinfo.Text = "";
+                    button_requestuber.Visibility = ViewStates.Visible;
                 }
             }
 
             if (String.IsNullOrEmpty(thisrequestdriverusername))
             {
-                Tuple<Request, bool, string> userrequest = await GetThisUserRequest();
-
-                if (userrequest.Item2)
-                {
-                    if (!String.IsNullOrEmpty(userrequest.Item1.driver_usename))
-                    {
-                        thisrequestdriverusername = userrequest.Item1.driver_usename;
-                        Settings.Driver_Username = userrequest.Item1.driver_usename;
-                    }
-                }
-                    if (location != null)
+                if (location != null)
                 {
                     LatLng latlng = new LatLng(location.Latitude, location.Longitude);
                     MarkerOptions options = new MarkerOptions()
@@ -167,20 +189,32 @@ namespace UberClone.Activities
             }
             if (requestactive == true)
             {
-                if (!String.IsNullOrEmpty(thisrequestdriverusername))
+               
+                // api getuserrequest
+                Tuple<Request, bool, string> userrequest = await GetThisUserRequest();
+                Android.Util.Log.Info("Lift", "requestactive true API RequestActive " + userrequest.Item2);
+                if (!String.IsNullOrEmpty(userrequest.Item1.driver_usename))
+                {
+                    thisrequestdriverusername = userrequest.Item1.driver_usename;
+                }
+                    if (!String.IsNullOrEmpty(thisrequestdriverusername))
                 {
                     //api get user where username == driver username
                     Tuple<User, bool, string> result_getdl = await GetRequestDriverLocation();
+
+                    Android.Util.Log.Info("Lift","API RequestDriverLocation " +result_getdl.Item2.ToString());
                     if (result_getdl.Item2)
                     {
-                        Settings.Driver_Username = result_getdl.Item1.username;
-                        mydriverlocation.Longitude = (double)result_getdl.Item1.user_longitude;
-                        mydriverlocation.Latitude = (double)result_getdl.Item1.user_latitude;
+                        mydriverlocation.Longitude = Convert.ToDouble(result_getdl.Item1.user_longitude);
+                        mydriverlocation.Latitude = Convert.ToDouble(result_getdl.Item1.user_latitude);
                     }
 
 
                     if (mydriverlocation.Longitude != 0 && mydriverlocation.Latitude != 0)
                     {
+                        markers.Clear();
+                        builder = new LatLngBounds.Builder();
+                       
                         var distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, mydriverlocation.Longitude, mydriverlocation.Latitude);
                         tvinfo.Text = "Your Driver is " + distanceinkm + " Km Away";
 
@@ -190,9 +224,10 @@ namespace UberClone.Activities
 
                         markers.Add(mMap.AddMarker(new MarkerOptions()
                            .SetIcon(BitmapDescriptorFactory
-                           .DefaultMarker(BitmapDescriptorFactory.HueBlue))
+                           .DefaultMarker(BitmapDescriptorFactory.HueYellow))
                            .SetPosition(new LatLng(mydriverlocation.Latitude, mydriverlocation.Longitude))
                            .SetTitle("RiderLocation")));
+
                         if (markers.Count > 0)
                         {
                             foreach (var m in markers)
@@ -201,23 +236,41 @@ namespace UberClone.Activities
                             }
 
                         }
-                        mMap.MoveCamera(CameraUpdateFactory.NewLatLngBounds(builder.Build(), 100));
+                        LatLngBounds bounds = builder.Build();
+                        CameraUpdate cu = CameraUpdateFactory.NewLatLngBounds(bounds,100);
+                        mMap.MoveCamera(cu);
+                        
                     }
                 }
-                // api updateuserlocation in request
+               // api updateuserlocation in request
                 Tuple<bool, string> result_update = await UpdateUserRequestLocationInDB();
-                if (result_update.Item1)
-                {
-                    Toast.MakeText(this, result_update.Item2, ToastLength.Short);
-                }
-                if (!result_update.Item1)
-                {
-                    Toast.MakeText(this, result_update.Item2, ToastLength.Short);
-                }
+                Android.Util.Log.Info("Lift", "API UpdateUserRequestLocationInDB " + result_update.Item1.ToString());
 
             }
-            handler.PostDelayed(new Java.Lang.Runnable(act), 5000);
+           
+                handler.PostDelayed(new Java.Lang.Runnable(act), 5000);
+                Android.Util.Log.Info("Lift", "Handler");
+            
+            
+            isRefreshLocationCalled = true;
         }
+
+        public void OnProviderDisabled(string provider)
+        {
+            Android.Util.Log.Info("UberCloneApp", "Provider Disabled");
+        }
+        public void OnProviderEnabled(string provider)
+        {
+            Android.Util.Log.Info("UberCloneApp", "Provider Enabled");
+        }
+        public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
+        {
+            Android.Util.Log.Info("UberCloneApp", "Status Changed");
+        }
+
+        
+
+      
 
         #region Request Uber Button Click
         private async void button_requestuber_Click(object sender, EventArgs e)
@@ -230,7 +283,7 @@ namespace UberClone.Activities
                 requestactive = true;
                 tvinfo.Text = "Finding UberDriver...";
                 button_requestuber.Text = "Cancel Uber";
-
+                Android.Util.Log.Info("Lift", "API AddRequest " + saveresult.Item1.ToString());
 
             }
             else
@@ -241,7 +294,7 @@ namespace UberClone.Activities
                 requestactive = false;
                 tvinfo.Text = "";
                 button_requestuber.Text = "Request Uber";
-
+                Android.Util.Log.Info("Lift", "API DeleteRequest " + saveresult.ToString());
             }
         }
         #endregion
@@ -293,12 +346,12 @@ namespace UberClone.Activities
             {
                 //internet available, get this user's request
 
-                var getparams = new NameValueCollection
+                var paramss = new NameValueCollection
                 {
                     { "username", Settings.Username }
                 };
 
-                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_GetThisUserRequest,HttpVerbs.GET);
+                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_GetThisUserRequest,HttpVerbs.GET, paramss);
 
                 return new Tuple<Request, bool, string>(result.Item1, result.Item2, result.Item3);
             }
@@ -318,8 +371,8 @@ namespace UberClone.Activities
             //check internet first
             if (CrossConnectivity.Current.IsConnected)
             {
-                //internet available, setting up locals & save 'em to db
 
+                //internet available, setting up locals & save 'em to db
                 var reqlong = location.Longitude.ToString(CultureInfo.InvariantCulture);
                 var reqlat = location.Latitude.ToString(CultureInfo.InvariantCulture);
                 var paramss = new FormUrlEncodedContent(new[]
@@ -328,7 +381,7 @@ namespace UberClone.Activities
                      new KeyValuePair<string, string>("requester_username",Settings.Username),
                      new KeyValuePair<string, string>("requester_longitude",reqlong),
                      new KeyValuePair<string, string>("requester_latitude", reqlat),
-                     new KeyValuePair<string, string>("driver_usename", Settings.Driver_Username)
+                     new KeyValuePair<string, string>("driver_usename", thisrequestdriverusername)
                  });
                 var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests + Settings.Request_ID, HttpVerbs.PUT, null, null, paramss);
 
@@ -418,29 +471,6 @@ namespace UberClone.Activities
 
         #endregion
 
-        public void OnLocationChanged(Location location)
-        {
-            UpdateLocation();
-            Android.Util.Log.Info("UberCloneApp", "Location Changed");
-
-        }
-        public void OnProviderDisabled(string provider)
-        {
-            Android.Util.Log.Info("UberCloneApp", "Provider Disabled");
-        }
-        public void OnProviderEnabled(string provider)
-        {
-            Android.Util.Log.Info("UberCloneApp", "Provider Enabled");
-        }
-        public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
-        {
-            Android.Util.Log.Info("UberCloneApp", "Status Changed");
-        }
-
-        public void OnMapLoaded()
-        {
-            act = new Action(RefreshLocation);
-            RefreshLocation();
-        }
+       
     }
 }
