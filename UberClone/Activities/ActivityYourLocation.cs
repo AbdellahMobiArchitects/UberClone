@@ -122,13 +122,11 @@ namespace UberClone.Activities
         }
         public void OnMapLoaded()
         {
-            
             if (isRefreshLocationCalled == false)
             {
                 RefreshLocation();
                 Android.Util.Log.Info("Lift", "OnMapLoadedRefreshLocation");
             }
-
             Android.Util.Log.Info("Lift", "OnMapLoadedCallback");
         }
 

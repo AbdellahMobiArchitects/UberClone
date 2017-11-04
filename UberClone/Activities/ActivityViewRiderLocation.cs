@@ -41,8 +41,7 @@ namespace UberClone.Activities
         string requesterusername, driverusername;
 
         List<Marker> markers = new List<Marker>();
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
+        LatLngBounds.Builder builder;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -165,6 +164,8 @@ namespace UberClone.Activities
             try
             {
                 mMap.Clear();
+                markers.Clear();
+                builder = new LatLngBounds.Builder();
                 location = locationmanager.GetLastKnownLocation(provider);
                 if (location != null)
                 {
