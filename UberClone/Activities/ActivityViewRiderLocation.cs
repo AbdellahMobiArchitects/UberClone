@@ -43,6 +43,10 @@ namespace UberClone.Activities
         List<Marker> markers = new List<Marker>();
         LatLngBounds.Builder builder;
 
+        Handler handler = new Handler();
+        Action act;
+
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -59,13 +63,17 @@ namespace UberClone.Activities
 
 
                 SetUpMapIfNeeded();
+              
+
+                acceptrequest.Click += Acceptrequest_Click;
+                buttonback.Click += Buttonback_Click;
+
                 locationmanager = (LocationManager)GetSystemService(Context.LocationService);
                 provider = locationmanager.GetBestProvider(new Criteria(), false);
                 locationmanager.RequestLocationUpdates(provider, 400, 1, this);
                 location = locationmanager.GetLastKnownLocation(provider);
 
-                acceptrequest.Click += Acceptrequest_Click;
-                buttonback.Click += Buttonback_Click;
+                act = new Action(UpdateLocation);
             }
             catch (Exception ex)
             {
@@ -131,7 +139,7 @@ namespace UberClone.Activities
 
         public void OnLocationChanged(Location location)
         {
-            UpdateLocation();
+            location = locationmanager.GetLastKnownLocation(provider);
             Toast.MakeText(this, "Location Changed", ToastLength.Short);
         }
 
@@ -153,6 +161,7 @@ namespace UberClone.Activities
         public void OnMapReady(GoogleMap googleMap)
         {
             this.mMap = googleMap;
+
             locationmanager = (LocationManager)GetSystemService(Context.LocationService);
             provider = locationmanager.GetBestProvider(new Criteria(), false);
             locationmanager.RequestLocationUpdates(provider, 400, 1, this);
@@ -176,16 +185,7 @@ namespace UberClone.Activities
                 }
                 else
                 {
-                    Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                    Android.App.AlertDialog alert = dialog.Create();
-                    alert.SetTitle("Information!");
-                    alert.SetMessage("Couldn't Locate Your Position");
-                    alert.SetIcon(Resource.Drawable.alert);
-                    alert.SetButton("OK", (c, ev) =>
-                    {
-
-                    });
-                    alert.Show();
+                    Toast.MakeText(this, "Couldn't Locate Your Position", ToastLength.Short);
                 }
                 if (requesterlatitude != 0 & requesterlongitude != 0)
                 {
@@ -211,20 +211,13 @@ namespace UberClone.Activities
                 }
 
                 mMap.SetOnMapLoadedCallback(this);
-                
+
+                handler.PostDelayed(new Java.Lang.Runnable(act), 5000);
+                Android.Util.Log.Info("Lift", "Handler");
             }
             catch (Exception ex)
             {
-                Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-                Android.App.AlertDialog alert = dialog.Create();
-                alert.SetTitle("Information!");
-                alert.SetMessage(ex.InnerException.Message);
-                alert.SetIcon(Resource.Drawable.alert);
-                alert.SetButton("OK", (c, ev) =>
-                {
-
-                });
-                alert.Show();
+                Toast.MakeText(this, ex.InnerException.Message, ToastLength.Short);
             }
         }
 
