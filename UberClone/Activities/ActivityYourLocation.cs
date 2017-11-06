@@ -288,7 +288,7 @@ namespace UberClone.Activities
             {
                 // api deleteuser
                 /*remove request from db*/
-                Tuple<bool, string> saveresult = await DeleteUserRequest();
+                bool saveresult = await DeleteUserRequest();
                 requestactive = false;
                 tvinfo.Text = "";
                 button_requestuber.Text = "Request Uber";
