@@ -47,17 +47,19 @@ namespace UberClone.Helpers
                         default:
                             break;
                     }
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        return new Tuple<T, bool, string>(default(T), false, response.ReasonPhrase);
-                    }
                     if (response.IsSuccessStatusCode)
+
                     {
                         string stringResponseJson = await response.Content.ReadAsStringAsync();
 
                         T result = JsonConvert.DeserializeObject<T>(stringResponseJson);
 
                         return new Tuple<T, bool, string>(result, true, response.ReasonPhrase);
+                        
+                    }
+                    else if (!response.IsSuccessStatusCode)
+                    {
+                        return new Tuple<T, bool, string>(default(T), false, response.ReasonPhrase);
                     }
                     else
                     {

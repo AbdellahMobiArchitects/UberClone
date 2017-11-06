@@ -51,8 +51,11 @@ namespace UberClone.Activities
                 provider = locationmanager.GetBestProvider(new Criteria(), false);
                 locationmanager.RequestLocationUpdates(provider, 400, 1, this);
                 location = locationmanager.GetLastKnownLocation(provider);
-
-                FillListView();
+                if (location!=null)
+                {
+                    FillListView();
+                }
+              
                 lvrequests.ItemClick += Lvrequests_ItemClick;
 
                 act = new Action(FillListView);
@@ -75,7 +78,6 @@ namespace UberClone.Activities
             i.PutExtra("latitude", selectedrequest.requester_latitude);
             i.PutExtra("driver_usename", selectedrequest.driver_usename);
 
-
             StartActivity(i);
 
         }
@@ -86,8 +88,11 @@ namespace UberClone.Activities
         private void UpdateLocation()
         {
             location = locationmanager.GetLastKnownLocation(provider);
-            FillListView();
-            SetMyLocation();
+            if (location != null)
+            {
+                FillListView();
+                SetMyLocation();
+            }
 
         }
         //1er Api
@@ -128,8 +133,6 @@ namespace UberClone.Activities
         //2eme Api
         private async void SetMyLocation()
         {
-            if (location != null)
-            {
                 string myLong = location.Longitude.ToString(CultureInfo.InvariantCulture);
                 string myLat = location.Latitude.ToString(CultureInfo.InvariantCulture);
 
@@ -149,7 +152,6 @@ namespace UberClone.Activities
                 {
                     Toast.MakeText(this, "Location Updated", ToastLength.Short);
                 }
-            }
 
         }
 
