@@ -140,22 +140,22 @@ namespace UberClone.Activities
         public void OnLocationChanged(Location location)
         {
             location = locationmanager.GetLastKnownLocation(provider);
-            Toast.MakeText(this, "Location Changed", ToastLength.Short);
+            Toast.MakeText(this, "Location Changed", ToastLength.Short).Show();
         }
 
         public void OnProviderDisabled(string provider)
         {
-            Toast.MakeText(this, "Provider Disabled", ToastLength.Short);
+            Toast.MakeText(this, "Provider Disabled", ToastLength.Short).Show();
         }
 
         public void OnProviderEnabled(string provider)
         {
-            Toast.MakeText(this, "Provider Enabled", ToastLength.Short);
+            Toast.MakeText(this, "Provider Enabled", ToastLength.Short).Show();
         }
 
         public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
         {
-            Toast.MakeText(this, "Status Changed", ToastLength.Short);
+            Toast.MakeText(this, "Status Changed", ToastLength.Short).Show();
         }
 
         public void OnMapReady(GoogleMap googleMap)
@@ -185,7 +185,7 @@ namespace UberClone.Activities
                 }
                 else
                 {
-                    Toast.MakeText(this, "Couldn't Locate Your Position", ToastLength.Short);
+                    Toast.MakeText(this, "Couldn't Locate Your Position", ToastLength.Short).Show();
                 }
                 if (requesterlatitude != 0 & requesterlongitude != 0)
                 {
@@ -198,7 +198,7 @@ namespace UberClone.Activities
                 }
                 else
                 {
-                    Toast.MakeText(this, "Couldn't Locate Client Position", ToastLength.Short);
+                    Toast.MakeText(this, "Couldn't Locate Client Position", ToastLength.Short).Show();
                 }
 
                 if (markers.Count > 0)
@@ -217,7 +217,7 @@ namespace UberClone.Activities
             }
             catch (Exception ex)
             {
-                Toast.MakeText(this, ex.InnerException.Message, ToastLength.Short);
+                Toast.MakeText(this, ex.InnerException.Message, ToastLength.Short).Show();
             }
         }
 

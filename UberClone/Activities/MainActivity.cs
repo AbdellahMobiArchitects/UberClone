@@ -83,7 +83,7 @@ namespace UberClone.Activities
                         }
                         if (!saveresult.Item2)
                         {
-                            Toast.MakeText(this, "Error adding "+RiderOrDriver, ToastLength.Short);
+                            Toast.MakeText(this, "Error adding "+RiderOrDriver, ToastLength.Short).Show();
                         }
                     }
                 }
@@ -101,7 +101,7 @@ namespace UberClone.Activities
                     }
                     if (!saveresult.Item2)
                     {
-                        Toast.MakeText(this, "Error adding " + RiderOrDriver, ToastLength.Short);
+                        Toast.MakeText(this, "Error adding " + RiderOrDriver, ToastLength.Short).Show();
                     }
                 }
 
@@ -121,11 +121,11 @@ namespace UberClone.Activities
                         Settings.Usertype = RiderOrDriver;
                         Settings.User_Longitude = saveresult.Item1.user_longitude.ToString();
                         Settings.User_Latitude = saveresult.Item1.user_latitude.ToString();
-                        RedirectUser(typeof(ActivityViewRequests));
+                        RedirectUser(typeof(ActivityRequests));
                     }
                     if (!saveresult.Item2)
                     {
-                        Toast.MakeText(this, "Error adding " + RiderOrDriver, ToastLength.Short);
+                        Toast.MakeText(this, "Error adding " + RiderOrDriver, ToastLength.Short).Show();
                     }
                 }
                 if (!string.IsNullOrEmpty(Settings.User_ID))
@@ -141,7 +141,7 @@ namespace UberClone.Activities
                         Settings.User_Longitude = getresult.Item1.user_longitude.ToString();
                         Settings.User_Latitude = getresult.Item1.user_latitude.ToString();
                         //Redirect();
-                        RedirectUser(typeof(ActivityViewRequests));
+                        RedirectUser(typeof(ActivityRequests));
 
                     }
                     if (!getresult.Item2)
@@ -154,11 +154,11 @@ namespace UberClone.Activities
                             Settings.Usertype = RiderOrDriver;
                             Settings.User_Longitude = saveresult.Item1.user_longitude.ToString();
                             Settings.User_Latitude = saveresult.Item1.user_latitude.ToString();
-                            RedirectUser(typeof(ActivityViewRequests));
+                            RedirectUser(typeof(ActivityRequests));
                         }
                         if (!saveresult.Item2)
                         {
-                            Toast.MakeText(this, "Error adding " + RiderOrDriver, ToastLength.Short);
+                            Toast.MakeText(this, "Error adding " + RiderOrDriver, ToastLength.Short).Show();
                         }
                     }
                 }
@@ -281,7 +281,7 @@ namespace UberClone.Activities
                             else
                             {
                                 //failed attempt, app stays open for now
-                                Toast.MakeText(this, "Error deleting user from db", ToastLength.Long).Show();
+                                Toast.MakeText(this, "Error deleting user from db", ToastLength.Short).Show();
                                 return false;
                             }
                         }
@@ -294,7 +294,7 @@ namespace UberClone.Activities
                 }
                 else
                 {
-                    Toast.MakeText(this, "No Internet", ToastLength.Long).Show();
+                    Toast.MakeText(this, "No Internet", ToastLength.Short).Show();
                     return false;
                 }
             }

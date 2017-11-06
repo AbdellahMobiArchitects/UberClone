@@ -111,6 +111,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Activities\ActivityRequests.cs" />
     <Compile Include="Activities\ActivityViewRiderLocation.cs" />
     <Compile Include="Activities\ActivityYourLocation.cs" />
     <Compile Include="Activities\ActivityViewRequests.cs" />
@@ -160,6 +161,9 @@
     <None Include="packages.config" />
     <None Include="Assets\AboutAssets.txt" />
     <Content Include="Resources\AboutResources.txt" />
+    <AndroidResource Include="Resources\layout\Layout_ActivityRequests.axml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\AndroidManifest.xml" />

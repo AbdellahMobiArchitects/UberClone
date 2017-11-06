@@ -182,7 +182,7 @@ namespace UberClone.Activities
                 }
                 else
                 {
-                    Toast.MakeText(this, "Locating...", ToastLength.Short);
+                    Toast.MakeText(this, "Locating...", ToastLength.Short).Show();
                 }
             }
             if (requestactive == true)
@@ -430,7 +430,7 @@ namespace UberClone.Activities
                 }
                 else
                 {
-                    Toast.MakeText(this, "No Connection: Couldn't Clean Request From Database!", ToastLength.Long).Show();
+                    Toast.MakeText(this, "No Connection: Couldn't Clean Request From Database!", ToastLength.Short).Show();
                     return false;
                 }
             }

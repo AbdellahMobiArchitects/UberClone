@@ -53,16 +53,16 @@ namespace UberClone.Activities
                 location = locationmanager.GetLastKnownLocation(provider);
                 if (location!=null)
                 {
-                    FillListView();
+                    UpdateLocation();
                 }
               
                 lvrequests.ItemClick += Lvrequests_ItemClick;
 
-                act = new Action(FillListView);
+                act = new Action(UpdateLocation);
             }
             catch (Exception e)
             {
-                Toast.MakeText(this, e.InnerException.Message, ToastLength.Short);
+                Toast.MakeText(this, e.InnerException.Message, ToastLength.Short).Show();
             }
         }
 
@@ -93,7 +93,7 @@ namespace UberClone.Activities
                 FillListView();
                 SetMyLocation();
             }
-
+            handler.PostDelayed(new Java.Lang.Runnable(act), 5000);
         }
         //1er Api
         private async void FillListView()
@@ -125,10 +125,10 @@ namespace UberClone.Activities
             }
             else
             {
-                Toast.MakeText(this, "No Requests", ToastLength.Short);
+                Toast.MakeText(this, "No Requests", ToastLength.Short).Show();
             }
 
-            handler.PostDelayed(new Java.Lang.Runnable(act), 5000);
+          
         }
         //2eme Api
         private async void SetMyLocation()
@@ -146,18 +146,18 @@ namespace UberClone.Activities
                 Tuple<User, bool, string> result = await RestHelper.APIRequest<User>(AppUrls.api_url_users + Settings.User_ID, HttpVerbs.POST, null, paramss);
                 if (!result.Item2)
                 {
-                    Toast.MakeText(this, "Update Location Error", ToastLength.Short);
+                    Toast.MakeText(this, "Update Location Error", ToastLength.Short).Show();
                 }
                 if (result.Item2)
                 {
-                    Toast.MakeText(this, "Location Updated", ToastLength.Short);
+                    Toast.MakeText(this, "Location Updated", ToastLength.Short).Show();
                 }
 
         }
 
         public void OnLocationChanged(Location location)
         {
-            UpdateLocation();
+            location = locationmanager.GetLastKnownLocation(provider);
             Android.Util.Log.Info("UberCloneApp", "Location Changed");
 
         }
