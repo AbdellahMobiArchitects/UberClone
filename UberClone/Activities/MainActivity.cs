@@ -56,7 +56,7 @@ namespace UberClone.Activities
                 if (!string.IsNullOrEmpty(Settings.User_ID))
                 {
                     //GetUser();
-                    var getresult = await GetUser(Convert.ToInt32(Settings.User_ID));
+                    Tuple<User, bool, string> getresult = await GetUser(Convert.ToInt32(Settings.User_ID));
                     if (getresult.Item2)
                     {
                         //Re-Assign();
@@ -71,7 +71,7 @@ namespace UberClone.Activities
                     }
                     if (!getresult.Item2)
                     {
-                        var saveresult = await SaveUser();
+                        Tuple<User, bool, string> saveresult = await SaveUser();
                         if (saveresult.Item2)
                         {
                             Settings.User_ID = saveresult.Item1.user_id.ToString();
@@ -89,7 +89,7 @@ namespace UberClone.Activities
                 }
                 if (string.IsNullOrEmpty(Settings.User_ID))
                 {
-                    var saveresult = await SaveUser();
+                    Tuple<User, bool, string> saveresult = await SaveUser();
                     if (saveresult.Item2)
                     {
                         Settings.User_ID = saveresult.Item1.user_id.ToString();
@@ -113,7 +113,7 @@ namespace UberClone.Activities
                 RiderOrDriver = switch_usertype.TextOn;
                 if (string.IsNullOrEmpty(Settings.User_ID))
                 {
-                    var saveresult = await SaveUser();
+                    Tuple<User,bool,string> saveresult = await SaveUser();
                     if (saveresult.Item2)
                     {
                         Settings.User_ID = saveresult.Item1.user_id.ToString();
@@ -131,7 +131,7 @@ namespace UberClone.Activities
                 if (!string.IsNullOrEmpty(Settings.User_ID))
                 {
                     //GetUser();
-                    var getresult = await GetUser(Convert.ToInt32(Settings.User_ID));
+                    Tuple<User, bool, string> getresult = await GetUser(Convert.ToInt32(Settings.User_ID));
                     if (getresult.Item2)
                     {
                         //Re-Assign();
@@ -146,7 +146,7 @@ namespace UberClone.Activities
                     }
                     if (!getresult.Item2)
                     {
-                        var saveresult = await SaveUser();
+                        Tuple<User, bool, string> saveresult = await SaveUser();
                         if (saveresult.Item2)
                         {
                             Settings.User_ID = saveresult.Item1.user_id.ToString();
@@ -187,8 +187,9 @@ namespace UberClone.Activities
             alert.SetIcon(Resource.Drawable.alert);
             alert.SetButton("OK", async (c, ev) =>
              {
+                 bool result = await DeleteUser();
                  //base.OnBackPressed();
-                 if (await DeleteUser())
+                 if (result)
                  {
                      Settings.ClearUserLocalVars();
                      Settings.ClearRequestLocalVars();
@@ -218,7 +219,7 @@ namespace UberClone.Activities
             if (CrossConnectivity.Current.IsConnected)
             {
                 //internet available, getuser with that id
-                var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users+id.ToString()+"/", HttpVerbs.GET, null, null, null);
+                Tuple<User, bool, string> result = await RestHelper.APIRequest<User>(AppUrls.api_url_users+id.ToString()+"/", HttpVerbs.GET, null, null, null);
 
                 return new Tuple<User, bool, string>(result.Item1, result.Item2, result.Item3);
             }
@@ -238,11 +239,11 @@ namespace UberClone.Activities
             if (CrossConnectivity.Current.IsConnected)
             {
                 //internet available, save2db & set up localc params
-                var postparams = new FormUrlEncodedContent(new[]
+                FormUrlEncodedContent postparams = new FormUrlEncodedContent(new[]
                {
                      new KeyValuePair<string, string>("usertype", RiderOrDriver)
                  });
-                var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users, HttpVerbs.POST, null, postparams, null);
+                Tuple<User, bool, string> result = await RestHelper.APIRequest<User>(AppUrls.api_url_users, HttpVerbs.POST, null, postparams, null);
 
                 return new Tuple<User, bool, string>(result.Item1, result.Item2, result.Item3);
             }
@@ -266,10 +267,10 @@ namespace UberClone.Activities
                     string url = AppUrls.api_url_users + Settings.User_ID;
                     using (HttpClient clt = new HttpClient())
                     {
-                        var userindb = await clt.GetAsync(url);
+                        HttpResponseMessage userindb = await clt.GetAsync(url);
                         if (userindb.IsSuccessStatusCode)
                         {
-                            var response = await clt.DeleteAsync(url);
+                            HttpResponseMessage response = await clt.DeleteAsync(url);
                             if (response.IsSuccessStatusCode)
                             {
                                 //successful attempt, cleaning local variables as well

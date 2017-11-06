@@ -65,10 +65,10 @@ namespace UberClone.Activities
 
         private void Lvrequests_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
-            var selecteditem = lvrequests.GetItemAtPosition(e.Position);
+            Java.Lang.Object selecteditem = lvrequests.GetItemAtPosition(e.Position);
             Intent i = new Intent(this, typeof(ActivityViewRiderLocation));
 
-            var selectedrequest = reqs.ElementAt(e.Position);
+            Request selectedrequest = reqs.ElementAt(e.Position);
             i.PutExtra("request_id", selectedrequest.request_id);
             i.PutExtra("username", selectedrequest.requester_username);
             i.PutExtra("longitude", selectedrequest.requester_longitude);
@@ -93,17 +93,17 @@ namespace UberClone.Activities
         //1er Api
         private async void FillListView()
         {
-            var requests = await RestHelper.APIRequest<List<Request>>(AppUrls.api_url_GetRequestsWithoutDriver, HttpVerbs.GET, null, null);
+            Tuple<List<Request>, bool, string> requests = await RestHelper.APIRequest<List<Request>>(AppUrls.api_url_GetRequestsWithoutDriver, HttpVerbs.GET, null, null);
             if (requests.Item2)
             {
                 reqs.Clear();
                 list_requests.Clear();
-                foreach (var i in requests.Item1)
+                foreach (Request i in requests.Item1)
                 {
                     if (string.IsNullOrEmpty(i.driver_usename))
                     {
 
-                        var distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, i.requester_longitude, i.requester_latitude);
+                        double distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, i.requester_longitude, i.requester_latitude);
                         list_requests.Add(distanceinkm.ToString() + " Km");
                         reqs.Add(new Request
                         {
@@ -115,7 +115,7 @@ namespace UberClone.Activities
                         });
                     }
                 }
-                var ListAdapter = new ArrayAdapter<String>(this, Android.Resource.Layout.SimpleListItem1, list_requests);
+                ArrayAdapter<string> ListAdapter = new ArrayAdapter<String>(this, Android.Resource.Layout.SimpleListItem1, list_requests);
                 lvrequests.Adapter = ListAdapter;
             }
             else
@@ -128,40 +128,29 @@ namespace UberClone.Activities
         //2eme Api
         private async void SetMyLocation()
         {
-            string myLong = location.Longitude.ToString(CultureInfo.InvariantCulture);
-            string myLat = location.Latitude.ToString(CultureInfo.InvariantCulture);
+            if (location != null)
+            {
+                string myLong = location.Longitude.ToString(CultureInfo.InvariantCulture);
+                string myLat = location.Latitude.ToString(CultureInfo.InvariantCulture);
 
-            var paramss = new FormUrlEncodedContent(new[] {
+                FormUrlEncodedContent paramss = new FormUrlEncodedContent(new[] {
                  new KeyValuePair<string, string>("user_id",Settings.User_ID),
                  new KeyValuePair<string, string>("username",Settings.Username),
                  new KeyValuePair<string, string>("usertype",Settings.Usertype),
                  new KeyValuePair<string, string>("user_longitude",myLong),
                  new KeyValuePair<string, string>("user_latitude",myLat)});
 
-            var result = await RestHelper.APIRequest<User>(AppUrls.api_url_users + Settings.User_ID, HttpVerbs.POST, null, paramss);
-            if (!result.Item2)
-            {
-                Toast.MakeText(this, "Update Location Error", ToastLength.Short);
+                Tuple<User, bool, string> result = await RestHelper.APIRequest<User>(AppUrls.api_url_users + Settings.User_ID, HttpVerbs.POST, null, paramss);
+                if (!result.Item2)
+                {
+                    Toast.MakeText(this, "Update Location Error", ToastLength.Short);
+                }
+                if (result.Item2)
+                {
+                    Toast.MakeText(this, "Location Updated", ToastLength.Short);
+                }
             }
-            if (result.Item2)
-            {
-                Toast.MakeText(this, "Location Updated", ToastLength.Short);
-            }
 
-            //using (HttpClient clt = new HttpClient())
-            //{
-            //    var response = await clt.PostAsync(AppUrls.api_url_users + Settings.User_ID, paramss);
-
-            //    if (!response.IsSuccessStatusCode)
-            //    {
-            //        Toast.MakeText(this, "Update Location Error", ToastLength.Short);
-            //    }
-            //    if (response.IsSuccessStatusCode)
-            //    {
-            //        Toast.MakeText(this, "Location Updated", ToastLength.Short);
-            //    }
-
-            //}
         }
 
         public void OnLocationChanged(Location location)

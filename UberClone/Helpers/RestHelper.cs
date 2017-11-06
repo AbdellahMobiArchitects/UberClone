@@ -23,7 +23,7 @@ namespace UberClone.Helpers
         {
             try
             {
-                using (var client = new HttpClient())
+                using (HttpClient client = new HttpClient())
                 {
                     //setup client
                     Uri uri = new Uri(url);
@@ -53,7 +53,7 @@ namespace UberClone.Helpers
                     }
                     if (response.IsSuccessStatusCode)
                     {
-                        var stringResponseJson = await response.Content.ReadAsStringAsync();
+                        string stringResponseJson = await response.Content.ReadAsStringAsync();
 
                         T result = JsonConvert.DeserializeObject<T>(stringResponseJson);
 
@@ -78,7 +78,7 @@ namespace UberClone.Helpers
     public static class RESTExtensions
     {
         /*
-                     var postParameters = new FormUrlEncodedContent(new[]
+                     FormUrlEncodedContent postParameters = new FormUrlEncodedContent(new[]
                 {
                      new KeyValuePair<string, string>("login", username),
                      new KeyValuePair<string, string>("password", password),
@@ -88,7 +88,7 @@ namespace UberClone.Helpers
         {
             if (parameters?.Count > 0)
             {
-                var stringBuilder = new StringBuilder();
+                StringBuilder stringBuilder = new StringBuilder();
                 string str = "?";
                 for (int index = 0; index < parameters.Count; ++index)
                 {

@@ -86,7 +86,7 @@ namespace UberClone.Activities
 
         private async void Acceptrequest_Click(object sender, EventArgs e)
         {
-            var result = await AcceptRequestUpdateRiderRequest();
+            Tuple<bool,string> result = await AcceptRequestUpdateRiderRequest();
             if (!result.Item1)
             {
                
@@ -203,7 +203,7 @@ namespace UberClone.Activities
 
                 if (markers.Count > 0)
                 {
-                    foreach (var m in markers)
+                    foreach (Marker m in markers)
                     {
                         builder.Include(m.Position);
                     }
@@ -233,7 +233,7 @@ namespace UberClone.Activities
             // Do a null check to confirm that we have not already instantiated the map.
             if (mMap == null)
             {
-                var frag = (SupportFragmentManager.FindFragmentById(Resource.Id.fragment_riderlocationmap) as SupportMapFragment);
+                SupportMapFragment frag = (SupportFragmentManager.FindFragmentById(Resource.Id.fragment_riderlocationmap) as SupportMapFragment);
                 frag.GetMapAsync(this);
             }
         }

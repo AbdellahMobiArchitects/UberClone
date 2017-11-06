@@ -74,7 +74,7 @@ namespace UberClone.Activities
         }
         private async void Button_zoomout_Click(object sender, EventArgs e)
         {
-            var latlng = new LatLng(location.Latitude, location.Longitude);
+            LatLng latlng = new LatLng(location.Latitude, location.Longitude);
             camera = CameraUpdateFactory.NewLatLng(latlng);
             mMap.MoveCamera(camera);
             await Task.Delay(500);
@@ -84,7 +84,7 @@ namespace UberClone.Activities
 
         private async void Button_zoomin_Click(object sender, EventArgs e)
         {
-            var latlng = new LatLng(location.Latitude, location.Longitude);
+            LatLng latlng = new LatLng(location.Latitude, location.Longitude);
             camera = CameraUpdateFactory.NewLatLng(latlng);
             mMap.MoveCamera(camera);
             await Task.Delay(500);
@@ -98,7 +98,7 @@ namespace UberClone.Activities
             // Do a null check to confirm that we have not already instantiated the map.
             if (mMap == null)
             {
-                var frag = (SupportFragmentManager.FindFragmentById(Resource.Id.fragment_googlemap) as SupportMapFragment);
+                SupportMapFragment frag = (SupportFragmentManager.FindFragmentById(Resource.Id.fragment_googlemap) as SupportMapFragment);
                 frag.GetMapAsync(this);
 
             }
@@ -213,7 +213,7 @@ namespace UberClone.Activities
                         markers.Clear();
                         builder = new LatLngBounds.Builder();
                        
-                        var distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, mydriverlocation.Longitude, mydriverlocation.Latitude);
+                        double distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, mydriverlocation.Longitude, mydriverlocation.Latitude);
                         tvinfo.Text = "Your Driver is " + distanceinkm + " Km Away";
 
                         markers.Add(mMap.AddMarker(new MarkerOptions()
@@ -228,7 +228,7 @@ namespace UberClone.Activities
 
                         if (markers.Count > 0)
                         {
-                            foreach (var m in markers)
+                            foreach (Marker m in markers)
                             {
                                 builder.Include(m.Position);
                             }
@@ -277,7 +277,7 @@ namespace UberClone.Activities
             {
                 //api save user
                 /*create request save to db*/
-                var saveresult = await SaveUsersRequest();
+                Tuple<bool,string> saveresult = await SaveUsersRequest();
                 requestactive = true;
                 tvinfo.Text = "Finding UberDriver...";
                 button_requestuber.Text = "Cancel Uber";
@@ -288,7 +288,7 @@ namespace UberClone.Activities
             {
                 // api deleteuser
                 /*remove request from db*/
-                var saveresult = await DeleteUserRequest();
+                Tuple<bool, string> saveresult = await DeleteUserRequest();
                 requestactive = false;
                 tvinfo.Text = "";
                 button_requestuber.Text = "Request Uber";
@@ -305,14 +305,14 @@ namespace UberClone.Activities
             {
                 //internet available, setting up locals & save 'em to db
 
-                var requestparameters = new FormUrlEncodedContent(new[]
+                FormUrlEncodedContent requestparameters = new FormUrlEncodedContent(new[]
                {
                     new KeyValuePair<string, string>("requester_username",Settings.Username),
                      new KeyValuePair<string, string>("requester_longitude", location.Longitude.ToString(CultureInfo.InvariantCulture)),
                      new KeyValuePair<string, string>("requester_latitude", location.Latitude.ToString(CultureInfo.InvariantCulture))
 
                  });
-                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests, HttpVerbs.POST, null, requestparameters);
+                Tuple<Request,bool, string> result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests, HttpVerbs.POST, null, requestparameters);
                 if (result.Item1 != null & result.Item2)
                 {
                     Settings.Request_ID = result.Item1.request_id.ToString();
@@ -344,12 +344,12 @@ namespace UberClone.Activities
             {
                 //internet available, get this user's request
 
-                var paramss = new NameValueCollection
+                NameValueCollection paramss = new NameValueCollection
                 {
                     { "username", Settings.Username }
                 };
 
-                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_GetThisUserRequest,HttpVerbs.GET, paramss);
+                Tuple<Request, bool, string> result = await RestHelper.APIRequest<Request>(AppUrls.api_url_GetThisUserRequest,HttpVerbs.GET, paramss);
 
                 return new Tuple<Request, bool, string>(result.Item1, result.Item2, result.Item3);
             }
@@ -371,9 +371,9 @@ namespace UberClone.Activities
             {
 
                 //internet available, setting up locals & save 'em to db
-                var reqlong = location.Longitude.ToString(CultureInfo.InvariantCulture);
-                var reqlat = location.Latitude.ToString(CultureInfo.InvariantCulture);
-                var paramss = new FormUrlEncodedContent(new[]
+                string reqlong = location.Longitude.ToString(CultureInfo.InvariantCulture);
+                string reqlat = location.Latitude.ToString(CultureInfo.InvariantCulture);
+                FormUrlEncodedContent paramss = new FormUrlEncodedContent(new[]
                {
                      new KeyValuePair<string, string>("request_id",Settings.Request_ID),
                      new KeyValuePair<string, string>("requester_username",Settings.Username),
@@ -381,7 +381,7 @@ namespace UberClone.Activities
                      new KeyValuePair<string, string>("requester_latitude", reqlat),
                      new KeyValuePair<string, string>("driver_usename", thisrequestdriverusername)
                  });
-                var result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests + Settings.Request_ID, HttpVerbs.PUT, null, null, paramss);
+                Tuple<Request, bool, string> result = await RestHelper.APIRequest<Request>(AppUrls.api_url_requests + Settings.Request_ID, HttpVerbs.PUT, null, null, paramss);
 
                     return new Tuple<bool, string>(result.Item2, result.Item3);
             }
@@ -403,8 +403,8 @@ namespace UberClone.Activities
                 {
                     //attempting user deletion from db
                     string url = AppUrls.api_url_requests + Settings.Request_ID;
-                    var httpClient = new HttpClient();
-                    var response = await httpClient.DeleteAsync(url);
+                    HttpClient httpClient = new HttpClient();
+                    HttpResponseMessage response = await httpClient.DeleteAsync(url);
                     if (response.IsSuccessStatusCode)
                     {
                         //successful attempt, cleaning local variables as well
@@ -450,12 +450,12 @@ namespace UberClone.Activities
             {
                 //internet available, setting up locals & getting this user's very own request
 
-                var paramss = new NameValueCollection
+                NameValueCollection paramss = new NameValueCollection
                 {
                     { "username", thisrequestdriverusername }
                 };
 
-                var result = await RestHelper.APIRequest<User>(AppUrls.api_url_GetThisUser, HttpVerbs.GET, paramss, null,null);
+                Tuple<User, bool, string> result = await RestHelper.APIRequest<User>(AppUrls.api_url_GetThisUser, HttpVerbs.GET, paramss, null,null);
 
                     return new Tuple<User, bool, string>(result.Item1, result.Item2, result.Item3);
                 
