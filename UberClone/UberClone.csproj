@@ -122,6 +122,7 @@
     <Compile Include="Helpers\restenum.cs" />
     <Compile Include="Helpers\RestHelper.cs" />
     <Compile Include="Helpers\Settings.cs" />
+    <Compile Include="Models\Direction.cs" />
     <Compile Include="Models\Request.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

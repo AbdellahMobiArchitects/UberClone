@@ -19,11 +19,13 @@ using UberClone.Models;
 using UberClone.Helpers;
 using System.Net.Http;
 using System.Globalization;
+using Java.Util;
+using Android.Graphics;
 
 namespace UberClone.Activities
 {
     [Activity(Label = "ActivityRequests",ScreenOrientation =Android.Content.PM.ScreenOrientation.Portrait)]
-    public class ActivityRequests : FragmentActivity ,Android.Locations.ILocationListener,Android.Gms.Maps.IOnMapReadyCallback
+    public class ActivityRequests : FragmentActivity ,Android.Locations.ILocationListener,Android.Gms.Maps.IOnMapReadyCallback, GoogleMap.IOnMarkerClickListener
     {
         GoogleMap mMap;
         LocationManager locationmanager;
@@ -32,6 +34,7 @@ namespace UberClone.Activities
 
         List<Marker> markers = new List<Marker>();
         List<Request> List_Request = new List<Request>();
+        Dictionary<Marker, Request> myMarkers = new Dictionary<Marker, Request>(); 
 
         LatLngBounds.Builder builder;
 
@@ -46,6 +49,7 @@ namespace UberClone.Activities
             SetupMap();
 
             act = new Action(UpdateMap);
+            
         }
 
         private void UpdateMap()
@@ -65,13 +69,12 @@ namespace UberClone.Activities
             markers.Clear();
             builder = new LatLngBounds.Builder();
 
-            
-
-
             Tuple<List<Request>, bool, string> requests = await RestHelper.APIRequest<List<Request>>(AppUrls.api_url_GetRequestsWithoutDriver, HttpVerbs.GET, null, null);
             if (requests.Item1.Count>0)
             {
                 List_Request.Clear();
+                markers.Clear();
+                myMarkers.Clear();
                 foreach (Request i in requests.Item1)
                 {
                     if (string.IsNullOrEmpty(i.driver_usename))
@@ -82,42 +85,46 @@ namespace UberClone.Activities
                             .DefaultMarker(BitmapDescriptorFactory.HueRed))
                             .SetPosition(driverlatlng)
                             .SetTitle("MyLocation")));
-
-                        double distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, i.requester_longitude, i.requester_latitude);
-
-                        //  List_Request.Add(distanceinkm.ToString() + " Km");
-                        List_Request.Add(new Request
-                        {
-                            request_id = i.request_id,
-                            requester_username = i.requester_username,
-                            driver_usename = i.driver_usename,
-                            requester_longitude = i.requester_longitude,
-                            requester_latitude = i.requester_latitude
-                        });
                         
                         if (i.requester_latitude != 0 & i.requester_longitude != 0)
                         {
+                            double distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, i.requester_longitude, i.requester_latitude);
+
                             LatLng riderlatlng = new LatLng(i.requester_latitude, i.requester_longitude);
-                            markers.Add(mMap.AddMarker(new MarkerOptions()
+
+                            Marker marker = mMap.AddMarker(new MarkerOptions()
                                 .SetIcon(BitmapDescriptorFactory
                                 .DefaultMarker(BitmapDescriptorFactory.HueOrange))
                                 .SetPosition(riderlatlng)
-                                .SetTitle(i.requester_username)));
-                        }
-
-                        if (markers.Count > 0)
-                        {
-                            foreach (Marker m in markers)
+                                .SetTitle(i.requester_username));
+                            
+                            Request Req = new Request
                             {
-                                builder.Include(m.Position);
-                            }
+                                request_id = i.request_id,
+                                requester_username = i.requester_username,
+                                driver_usename = i.driver_usename,
+                                requester_longitude = i.requester_longitude,
+                                requester_latitude = i.requester_latitude
+                            };
 
+                            markers.Add(marker);
+                            List_Request.Add(Req);
+
+                             myMarkers.Add(marker,Req);
                         }
-                        LatLngBounds bounds = builder.Build();
-                        CameraUpdate cu = CameraUpdateFactory.NewLatLngBounds(bounds, 100);
-                        mMap.MoveCamera(cu);
                     }
                 }
+                if (markers.Count > 0)
+                {
+                    foreach (Marker m in markers)
+                    {
+                        builder.Include(m.Position);
+                    }
+
+                }
+                LatLngBounds bounds = builder.Build();
+                CameraUpdate cu = CameraUpdateFactory.NewLatLngBounds(bounds, 100);
+                mMap.MoveCamera(cu);
             }
             else
             {
@@ -133,6 +140,14 @@ namespace UberClone.Activities
                 Toast.MakeText(this, "No Requests Found", ToastLength.Short).Show();
             }
 
+        }
+        public bool OnMarkerClick(Marker marker)
+        {
+            if (myMarkers.TryGetValue(marker, out Request cltrequest))
+            {
+                LatLng cltloc = new LatLng(cltrequest.requester_latitude, cltrequest.requester_longitude);
+
+            } 
         }
         private async void SetMyLocation()
         {
@@ -164,6 +179,7 @@ namespace UberClone.Activities
             locationmanager = (LocationManager)GetSystemService(Context.LocationService);
             provider = locationmanager.GetBestProvider(new Criteria(), false);
             locationmanager.RequestLocationUpdates(provider, 100, 1, this);
+            mMap.SetOnMarkerClickListener(this);
             UpdateMap();
 
         }
@@ -194,6 +210,6 @@ namespace UberClone.Activities
             }
         }
 
- 
+        
     }
 }
