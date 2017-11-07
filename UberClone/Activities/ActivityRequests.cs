@@ -17,10 +17,12 @@ using Android.Support.V7.App;
 using Android.Support.V4.App;
 using UberClone.Models;
 using UberClone.Helpers;
+using Newtonsoft.Json;
 using System.Net.Http;
 using System.Globalization;
 using Java.Util;
 using Android.Graphics;
+using System.Threading.Tasks;
 
 namespace UberClone.Activities
 {
@@ -34,7 +36,9 @@ namespace UberClone.Activities
 
         List<Marker> markers = new List<Marker>();
         List<Request> List_Request = new List<Request>();
-        Dictionary<Marker, Request> myMarkers = new Dictionary<Marker, Request>(); 
+        Dictionary<Marker, Request> myMarkers = new Dictionary<Marker, Request>();
+
+        Android.Gms.Maps.Model.Polyline myPolyline;
 
         LatLngBounds.Builder builder;
 
@@ -145,9 +149,51 @@ namespace UberClone.Activities
         {
             if (myMarkers.TryGetValue(marker, out Request cltrequest))
             {
-                LatLng cltloc = new LatLng(cltrequest.requester_latitude, cltrequest.requester_longitude);
+                LatLng location_client = new LatLng(cltrequest.requester_latitude, cltrequest.requester_longitude);
+                LatLng location_driver = new LatLng(location.Latitude, location.Longitude);
 
-            } 
+                var result =  GetDirectionAsync(location_client, location_driver);
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        private async Direction GetDirectionAsync(LatLng a,LatLng b)
+        {
+            using (HttpClient http_clt = new HttpClient())
+            {
+                string a_latitude = Convert.ToString(a.Latitude);
+                string a_logitude = Convert.ToString(a.Longitude);
+                string b_latitude = Convert.ToString(b.Latitude);
+                string b_longitude = Convert.ToString(b.Longitude);
+                HttpResponseMessage result = await http_clt
+                    .GetAsync("https://maps.googleapis.com/maps/api/directions/json"
+                    +"?origin="
+                    +a_latitude
+                    +","
+                    +a_logitude
+                    +"&destination="
+                    +b_latitude
+                    +","
+                    +b_longitude
+                    +"&key=AIzaSyAZRBPXKfwvmTTD0nFkfsweU3OhLAQhGC8");
+                if (result.IsSuccessStatusCode)
+                {
+                    var content result.Content.ReadAsStringAsync()
+                    return true;
+                }
+                if (result.IsSuccessStatusCode)
+                {
+                    return false;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
         private async void SetMyLocation()
         {
