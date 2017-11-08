@@ -119,6 +119,7 @@
     <Compile Include="AppUrls.cs" />
     <Compile Include="Helpers\GeoDistanceHelper.cs" />
     <Compile Include="Helpers\Handler.cs" />
+    <Compile Include="Helpers\PolyLineHelper.cs" />
     <Compile Include="Helpers\restenum.cs" />
     <Compile Include="Helpers\RestHelper.cs" />
     <Compile Include="Helpers\Settings.cs" />

@@ -37,6 +37,7 @@ namespace UberClone.Activities
         List<Marker> markers = new List<Marker>();
         List<Request> List_Request = new List<Request>();
         Dictionary<Marker, Request> myMarkers = new Dictionary<Marker, Request>();
+        Direction direc;
 
         Android.Gms.Maps.Model.Polyline myPolyline;
 
@@ -149,11 +150,14 @@ namespace UberClone.Activities
         {
             if (myMarkers.TryGetValue(marker, out Request cltrequest))
             {
-                LatLng location_client = new LatLng(cltrequest.requester_latitude, cltrequest.requester_longitude);
                 LatLng location_driver = new LatLng(location.Latitude, location.Longitude);
+                LatLng location_client = new LatLng(cltrequest.requester_latitude, cltrequest.requester_longitude);
+                
 
-                var result =  GetDirectionAsync(location_client, location_driver);
+                Toast.MakeText(this, Convert.ToString(location_client) + Convert.ToString(location_driver), ToastLength.Short).Show();
 
+                DrawPolyline(location_driver,location_client);
+                
                 return true;
             }
             else
@@ -161,38 +165,38 @@ namespace UberClone.Activities
                 return false;
             }
         }
-        private async Direction GetDirectionAsync(LatLng a,LatLng b)
+        public async void DrawPolyline(LatLng a, LatLng b)
         {
-            using (HttpClient http_clt = new HttpClient())
+            string a_latitude = Convert.ToString(a.Latitude);
+            string a_logitude = Convert.ToString(a.Longitude);
+            string b_latitude = Convert.ToString(b.Latitude);
+            string b_longitude = Convert.ToString(b.Longitude);
+            string url = "https://maps.googleapis.com/maps/api/directions/json"
+                + "?origin="
+                + a_latitude
+                + ","
+                + a_logitude
+                + "&destination="
+                + b_latitude
+                + ","
+                + b_longitude
+                + "&key=AIzaSyAZRBPXKfwvmTTD0nFkfsweU3OhLAQhGC8";
+
+            var result_directions = await RestHelper.APIRequest<Direction>(url, HttpVerbs.GET);
+            if (result_directions.Item2)
             {
-                string a_latitude = Convert.ToString(a.Latitude);
-                string a_logitude = Convert.ToString(a.Longitude);
-                string b_latitude = Convert.ToString(b.Latitude);
-                string b_longitude = Convert.ToString(b.Longitude);
-                HttpResponseMessage result = await http_clt
-                    .GetAsync("https://maps.googleapis.com/maps/api/directions/json"
-                    +"?origin="
-                    +a_latitude
-                    +","
-                    +a_logitude
-                    +"&destination="
-                    +b_latitude
-                    +","
-                    +b_longitude
-                    +"&key=AIzaSyAZRBPXKfwvmTTD0nFkfsweU3OhLAQhGC8");
-                if (result.IsSuccessStatusCode)
+                var route = result_directions.Item1.routes.ToList();
+                var polylinestring = route[0].overview_polyline.points;
+                var list_location = PolyLineHelper.DecodePolylinePoints(polylinestring);
+                foreach (Location loc in list_location)
                 {
-                    var content result.Content.ReadAsStringAsync()
-                    return true;
+
                 }
-                if (result.IsSuccessStatusCode)
-                {
-                    return false;
-                }
-                else
-                {
-                    return false;
-                }
+                
+            }
+            if (!result_directions.Item2)
+            {
+                Toast.MakeText(this, "Update Location Error", ToastLength.Short).Show();
             }
         }
         private async void SetMyLocation()
