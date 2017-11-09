@@ -79,7 +79,7 @@ namespace UberClone.Models
         public double lng { get; set; }
     }
 
-    public class Polyline
+    public class PPolyline
     {
         public string points { get; set; }
     }
@@ -96,7 +96,7 @@ namespace UberClone.Models
         public Duration2 duration { get; set; }
         public EndLocation2 end_location { get; set; }
         public string html_instructions { get; set; }
-        public Polyline polyline { get; set; }
+        public PPolyline polyline { get; set; }
         public StartLocation2 start_location { get; set; }
         public string travel_mode { get; set; }
         public string maneuver { get; set; }

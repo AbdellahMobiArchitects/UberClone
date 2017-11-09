@@ -23,28 +23,28 @@ using System.Globalization;
 using Java.Util;
 using Android.Graphics;
 using System.Threading.Tasks;
+using Java.Lang;
 
 namespace UberClone.Activities
 {
     [Activity(Label = "ActivityRequests",ScreenOrientation =Android.Content.PM.ScreenOrientation.Portrait)]
     public class ActivityRequests : FragmentActivity ,Android.Locations.ILocationListener,Android.Gms.Maps.IOnMapReadyCallback, GoogleMap.IOnMarkerClickListener
     {
-        GoogleMap mMap;
-        LocationManager locationmanager;
-        string provider;
-        Location location;
+        public GoogleMap mMap;
+        public LocationManager locationmanager;
+        public string provider;
+        public Location location;
 
-        List<Marker> markers = new List<Marker>();
-        List<Request> List_Request = new List<Request>();
-        Dictionary<Marker, Request> myMarkers = new Dictionary<Marker, Request>();
-        Direction direc;
+        public List<Marker> markers = new List<Marker>();
+        public List<Request> List_Request = new List<Request>();
+        public Dictionary<Marker, Request> myMarkers = new Dictionary<Marker, Request>();
+        public PolylineOptions myPolyLineOptions = new PolylineOptions();
 
-        Android.Gms.Maps.Model.Polyline myPolyline;
+        public LatLngBounds.Builder builder;
 
-        LatLngBounds.Builder builder;
-
-        Handler handler = new Handler();
-        Action act;
+        public Handler myHandler = new Handler();
+        public Action myAction;
+        public Runnable myRunnable;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -53,7 +53,8 @@ namespace UberClone.Activities
 
             SetupMap();
 
-            act = new Action(UpdateMap);
+            myAction = new Action(UpdateMap);
+            myRunnable = new Runnable(myAction);
             
         }
 
@@ -64,8 +65,10 @@ namespace UberClone.Activities
             {
                 RefreshMapMarkers();
                 SetMyLocation();
+
+
             }
-            handler.PostDelayed(new Java.Lang.Runnable(act), 5000);
+            myHandler.PostDelayed(myRunnable, 5000);
         }
 
         private async void RefreshMapMarkers()
@@ -142,31 +145,40 @@ namespace UberClone.Activities
                 CameraUpdate camera = CameraUpdateFactory.NewLatLngZoom(driverlatlng, 18);
                 mMap.MoveCamera(camera);
 
-                Toast.MakeText(this, "No Requests Found", ToastLength.Short).Show();
+                Toast.MakeText(this, "No Requests Found :(", ToastLength.Short).Show();
+                Android.Util.Log.Info("Lift_API", "No_Requests_Found");
             }
 
         }
         public bool OnMarkerClick(Marker marker)
         {
-            if (myMarkers.TryGetValue(marker, out Request cltrequest))
+            myHandler.RemoveCallbacks(myRunnable);
+            var marker_request = myMarkers.Where(x => x.Key.Title == marker.Title).Select(x => x.Value).SingleOrDefault();
+            if (marker_request!=null)
             {
                 LatLng location_driver = new LatLng(location.Latitude, location.Longitude);
-                LatLng location_client = new LatLng(cltrequest.requester_latitude, cltrequest.requester_longitude);
-                
-
-                Toast.MakeText(this, Convert.ToString(location_client) + Convert.ToString(location_driver), ToastLength.Short).Show();
-
-                DrawPolyline(location_driver,location_client);
+                LatLng location_client = new LatLng(marker_request.requester_latitude, marker_request.requester_longitude);
+                Android.Util.Log.Info("Lift_Directions_OnMarkerClick", Convert.ToString(location_client) + Convert.ToString(location_driver));
+                GetPolyline(location_driver,location_client);
                 
                 return true;
             }
             else
             {
+                myHandler.PostDelayed(myRunnable, 0);
                 return false;
             }
         }
-        public async void DrawPolyline(LatLng a, LatLng b)
+        public async void GetPolyline(LatLng a, LatLng b)
         {
+            var polyoptions = new PolylineOptions();
+            polyoptions.Add(new LatLng(33.493989, -7.728172));
+            polyoptions.Add(new LatLng(33.615988, -7.499647));
+            var daline = mMap.AddPolyline(polyoptions);
+            daline.Width = 20;
+            daline.Color = Color.ParseColor("#0099ff");
+
+            Android.Util.Log.Info("Lift_INFO", "Google Location Enabled: "+ mMap.MyLocationEnabled.ToString());
             string a_latitude = Convert.ToString(a.Latitude);
             string a_logitude = Convert.ToString(a.Longitude);
             string b_latitude = Convert.ToString(b.Latitude);
@@ -182,21 +194,46 @@ namespace UberClone.Activities
                 + b_longitude
                 + "&key=AIzaSyAZRBPXKfwvmTTD0nFkfsweU3OhLAQhGC8";
 
-            var result_directions = await RestHelper.APIRequest<Direction>(url, HttpVerbs.GET);
-            if (result_directions.Item2)
-            {
-                var route = result_directions.Item1.routes.ToList();
-                var polylinestring = route[0].overview_polyline.points;
-                var list_location = PolyLineHelper.DecodePolylinePoints(polylinestring);
-                foreach (Location loc in list_location)
-                {
-
-                }
-                
-            }
+            Tuple<Direction, bool, string> result_directions =
+                await RestHelper.APIRequest<Direction>(url, HttpVerbs.GET);
             if (!result_directions.Item2)
             {
-                Toast.MakeText(this, "Update Location Error", ToastLength.Short).Show();
+                Toast.MakeText(this, "Error_Directions_No_Response :(", ToastLength.Short).Show();
+                Android.Util.Log.Info("Lift_API", "Error_Directions_No_Response");
+            }
+            if (result_directions.Item2)
+            {
+                if (result_directions.Item1.status == "NOT_FOUND")
+                {
+                    Toast.MakeText(this, "No_Directions_Found :(", ToastLength.Short).Show();
+                    Android.Util.Log.Info("Lift_API", "No_Directions_Found");
+                }
+                if (result_directions.Item1.status == "OK")
+                {
+                    List<Route> route = result_directions.Item1.routes.ToList();
+                    if (route.Count > 0)
+                    {
+                        string polylinestring = route[0].overview_polyline.points;
+                        if (!string.IsNullOrEmpty(polylinestring))
+                        {
+                            List<LatLng> list_location = PolyLineHelper.DecodePolylinePoints(polylinestring);
+                            if (list_location.Count > 0)
+                            {
+                                foreach (LatLng loc in list_location)
+                                {
+                                    myPolyLineOptions = myPolyLineOptions.Add(loc);
+                                }
+
+                                Polyline line = mMap.AddPolyline(myPolyLineOptions);
+                                line.Width = 11;
+                                line.Color = Color.ParseColor("#0099ff");
+
+
+
+                            }
+                        }
+                    }
+                }
             }
         }
         private async void SetMyLocation()
@@ -214,11 +251,13 @@ namespace UberClone.Activities
             Tuple<User, bool, string> result = await RestHelper.APIRequest<User>(AppUrls.api_url_users + Settings.User_ID, HttpVerbs.POST, null, paramss);
             if (!result.Item2)
             {
-                Toast.MakeText(this, "Update Location Error", ToastLength.Short).Show();
+                
+                Android.Util.Log.Info("Lift_API", "Error_Setting_Location");
             }
             if (result.Item2)
             {
-                Toast.MakeText(this, "Location Updated", ToastLength.Short).Show();
+                
+                Android.Util.Log.Info("Lift_API", "Success_Setting_Location");
             }
 
         }
@@ -240,17 +279,17 @@ namespace UberClone.Activities
 
         public void OnProviderDisabled(string provider)
         {
-            Toast.MakeText(this, "OnProviderDisabled", ToastLength.Short).Show();
+            Android.Util.Log.Info("Lift_Location", "OnProviderDisabled");
         }
 
         public void OnProviderEnabled(string provider)
         {
-            Toast.MakeText(this, "OnProviderEnabled", ToastLength.Short).Show();
+            Android.Util.Log.Info("Lift_Location", "OnProviderEnabled");
         }
 
         public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
         {
-            Toast.MakeText(this, "OnStatusChanged", ToastLength.Short).Show();
+            Android.Util.Log.Info("Lift_Location", "OnStatusChanged");
         }
         private void SetupMap()
         {

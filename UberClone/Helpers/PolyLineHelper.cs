@@ -10,6 +10,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Android.Locations;
+using Android.Gms.Maps.Model;
 
 namespace UberClone.Helpers
 {
@@ -20,10 +21,10 @@ namespace UberClone.Helpers
         //    public double Latitude { get; set; }
         //    public double Longitude { get; set; }
         //}
-        public static List<Location> DecodePolylinePoints(string encodedPoints)
+        public static List<LatLng> DecodePolylinePoints(string encodedPoints)
         {
             if (encodedPoints == null || encodedPoints == "") return null;
-            List<Location> poly = new List<Location>();
+            List<LatLng> poly = new List<LatLng>();
             char[] polylinechars = encodedPoints.ToCharArray();
             int index = 0;
 
@@ -66,15 +67,15 @@ namespace UberClone.Helpers
                         break;
 
                     currentLng += (sum & 1) == 1 ? ~(sum >> 1) : (sum >> 1);
-                    Location p = null;
-                    p.Latitude = Convert.ToDouble(currentLat) / 100000.0;
-                    p.Longitude = Convert.ToDouble(currentLng) / 100000.0;
-                    poly.Add(p);
+                    var lng = Convert.ToDouble(currentLat) / 100000.0;
+                    var lat = Convert.ToDouble(currentLng) / 100000.0;
+                    LatLng Loc = new LatLng(lat,lng);
+                    poly.Add(Loc);
                 }
             }
             catch (Exception ex)
             {
-                Android.Util.Log.Info("Lift", ex.InnerException.Message);
+                throw ex;
             }
             return poly;
         }
