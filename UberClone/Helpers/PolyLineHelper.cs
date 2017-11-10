@@ -67,8 +67,8 @@ namespace UberClone.Helpers
                         break;
 
                     currentLng += (sum & 1) == 1 ? ~(sum >> 1) : (sum >> 1);
-                    var lng = Convert.ToDouble(currentLat) / 100000.0;
-                    var lat = Convert.ToDouble(currentLng) / 100000.0;
+                    var lat = Convert.ToDouble(currentLat) / 100000.0;
+                    var lng = Convert.ToDouble(currentLng) / 100000.0;
                     LatLng Loc = new LatLng(lat,lng);
                     poly.Add(Loc);
                 }

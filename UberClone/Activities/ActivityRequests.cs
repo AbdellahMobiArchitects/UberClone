@@ -30,21 +30,21 @@ namespace UberClone.Activities
     [Activity(Label = "ActivityRequests",ScreenOrientation =Android.Content.PM.ScreenOrientation.Portrait)]
     public class ActivityRequests : FragmentActivity ,Android.Locations.ILocationListener,Android.Gms.Maps.IOnMapReadyCallback, GoogleMap.IOnMarkerClickListener
     {
-        public GoogleMap mMap;
-        public LocationManager locationmanager;
-        public string provider;
-        public Location location;
+         GoogleMap mMap;
+         LocationManager locationmanager;
+         string provider;
+         Location location;
 
-        public List<Marker> markers = new List<Marker>();
-        public List<Request> List_Request = new List<Request>();
-        public Dictionary<Marker, Request> myMarkers = new Dictionary<Marker, Request>();
-        public PolylineOptions myPolyLineOptions = new PolylineOptions();
+         List<Marker> markers = new List<Marker>();
+         List<Request> List_Request = new List<Request>();
+         Dictionary<Marker, Request> myMarkers = new Dictionary<Marker, Request>();
+        PolylineOptions myPolyLineOptions;
 
-        public LatLngBounds.Builder builder;
+         LatLngBounds.Builder builder;
 
-        public Handler myHandler = new Handler();
-        public Action myAction;
-        public Runnable myRunnable;
+         Handler myHandler = new Handler();
+         Action myAction;
+         Runnable myRunnable;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -152,7 +152,9 @@ namespace UberClone.Activities
         }
         public bool OnMarkerClick(Marker marker)
         {
+            // Stop 5Sec Refresh
             myHandler.RemoveCallbacks(myRunnable);
+
             var marker_request = myMarkers.Where(x => x.Key.Title == marker.Title).Select(x => x.Value).SingleOrDefault();
             if (marker_request!=null)
             {
@@ -171,13 +173,7 @@ namespace UberClone.Activities
         }
         public async void GetPolyline(LatLng a, LatLng b)
         {
-            var polyoptions = new PolylineOptions();
-            polyoptions.Add(new LatLng(33.493989, -7.728172));
-            polyoptions.Add(new LatLng(33.615988, -7.499647));
-            var daline = mMap.AddPolyline(polyoptions);
-            daline.Width = 20;
-            daline.Color = Color.ParseColor("#0099ff");
-
+            myPolyLineOptions = new PolylineOptions();
             Android.Util.Log.Info("Lift_INFO", "Google Location Enabled: "+ mMap.MyLocationEnabled.ToString());
             string a_latitude = Convert.ToString(a.Latitude);
             string a_logitude = Convert.ToString(a.Longitude);
@@ -224,9 +220,9 @@ namespace UberClone.Activities
                                     myPolyLineOptions = myPolyLineOptions.Add(loc);
                                 }
 
-                                Polyline line = mMap.AddPolyline(myPolyLineOptions);
-                                line.Width = 11;
-                                line.Color = Color.ParseColor("#0099ff");
+                                Polyline myLine = mMap.AddPolyline(myPolyLineOptions);
+                                myLine.Width = 20;
+                                myLine.Color = Color.ParseColor("#0099ff");
 
 
 
