@@ -116,6 +116,7 @@
     <Compile Include="Activities\ActivityYourLocation.cs" />
     <Compile Include="Activities\ActivityViewRequests.cs" />
     <Compile Include="Activities\MainActivity.cs" />
+    <Compile Include="Activities\SemiActivity_Dialog.cs" />
     <Compile Include="AppUrls.cs" />
     <Compile Include="Helpers\GeoDistanceHelper.cs" />
     <Compile Include="Helpers\Handler.cs" />
@@ -164,6 +165,9 @@
     <None Include="Assets\AboutAssets.txt" />
     <Content Include="Resources\AboutResources.txt" />
     <AndroidResource Include="Resources\layout\Layout_ActivityRequests.axml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+    <AndroidResource Include="Resources\layout\Layout_Activity_Dialog_ActivityRequests.axml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
