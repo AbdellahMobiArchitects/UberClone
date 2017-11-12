@@ -28,29 +28,29 @@ using Java.Lang;
 
 namespace UberClone.Activities
 {
-    [Activity(Label = "ActivityRequests",ScreenOrientation =Android.Content.PM.ScreenOrientation.Portrait)]
-    public class ActivityRequests : FragmentActivity, Android.Locations.ILocationListener,Android.Gms.Maps.IOnMapReadyCallback,  GoogleMap.IInfoWindowAdapter
+    [Activity(Label = "ActivityRequests", ScreenOrientation = Android.Content.PM.ScreenOrientation.Portrait)]
+    public class ActivityRequests : FragmentActivity, Android.Locations.ILocationListener, Android.Gms.Maps.IOnMapReadyCallback, GoogleMap.IInfoWindowAdapter
     {
-         GoogleMap mMap;
-         LocationManager locationmanager;
-         string provider;
-         Location location;
+        GoogleMap mMap;
+        LocationManager locationmanager;
+        string provider;
+        Location location;
 
-         List<Marker> markers = new List<Marker>();
-         List<Request> List_Request = new List<Request>();
-         Dictionary<Marker, Request> myMarkers = new Dictionary<Marker, Request>();
-         PolylineOptions myPolyLineOptions;
+        List<Marker> markers = new List<Marker>();
+        List<Request> List_Request = new List<Request>();
+        Dictionary<Marker, Request> myMarkers = new Dictionary<Marker, Request>();
+        PolylineOptions myPolyLineOptions;
 
-         LatLngBounds.Builder builder;
+        LatLngBounds.Builder builder;
 
-         Handler myHandler = new Handler();
-         Action myAction;
-         Runnable myRunnable;
+        Handler myHandler = new Handler();
+        Action myAction;
+        Runnable myRunnable;
 
 
         //dialog controls
-        TextView textview_estimatedtime ;
-        TextView textview_distance ;
+        TextView textview_estimatedtime;
+        TextView textview_distance;
         Button button_acceptrequest;
         Button button_declinerequest;
 
@@ -68,10 +68,10 @@ namespace UberClone.Activities
             myAction = new Action(UpdateMap);
             myRunnable = new Runnable(myAction);
 
-            
+
         }
 
-       
+
 
         private void SetupMap()
         {
@@ -91,7 +91,10 @@ namespace UberClone.Activities
 
 
             }
-            myHandler.PostDelayed(myRunnable, 10000);
+
+            myHandler.PostDelayed(myRunnable, 5000);
+            Toast.MakeText(this, "Pinpointing...", ToastLength.Long);
+
         }
 
         private async void RefreshMapMarkers()
@@ -101,7 +104,7 @@ namespace UberClone.Activities
             builder = new LatLngBounds.Builder();
 
             Tuple<List<Request>, bool, string> requests = await RestHelper.APIRequest<List<Request>>(AppUrls.api_url_GetRequestsWithoutDriver, HttpVerbs.GET, null, null);
-            if (requests.Item1.Count>0)
+            if (requests.Item1.Count > 0)
             {
                 List_Request.Clear();
                 markers.Clear();
@@ -116,7 +119,7 @@ namespace UberClone.Activities
                             .DefaultMarker(BitmapDescriptorFactory.HueRed))
                             .SetPosition(driverlatlng)
                             .SetTitle("MyLocation")));
-                        
+
                         if (i.requester_latitude != 0 & i.requester_longitude != 0)
                         {
                             double distanceinkm = GeoDistanceHelper.DistanceBetweenPlaces(location.Longitude, location.Latitude, i.requester_longitude, i.requester_latitude);
@@ -128,7 +131,7 @@ namespace UberClone.Activities
                                 .DefaultMarker(BitmapDescriptorFactory.HueOrange))
                                 .SetPosition(riderlatlng)
                                 .SetTitle(i.requester_username));
-                            
+
                             Request Req = new Request
                             {
                                 request_id = i.request_id,
@@ -141,7 +144,7 @@ namespace UberClone.Activities
                             markers.Add(marker);
                             List_Request.Add(Req);
 
-                             myMarkers.Add(marker,Req);
+                            myMarkers.Add(marker, Req);
                         }
                     }
                 }
@@ -189,12 +192,12 @@ namespace UberClone.Activities
             Tuple<User, bool, string> result = await RestHelper.APIRequest<User>(AppUrls.api_url_users + Settings.User_ID, HttpVerbs.POST, null, paramss);
             if (!result.Item2)
             {
-                
+
                 Android.Util.Log.Info("Lift_API", "Error_Setting_Location");
             }
             if (result.Item2)
             {
-                
+
                 Android.Util.Log.Info("Lift_API", "Success_Setting_Location");
             }
 
@@ -211,7 +214,7 @@ namespace UberClone.Activities
 
         }
 
-        private async void mMap_MarkerClick(object sender, GoogleMap.MarkerClickEventArgs e)
+        private void mMap_MarkerClick(object sender, GoogleMap.MarkerClickEventArgs e)
         {
             // Stop 5Sec Refresh
             myHandler.RemoveCallbacks(myRunnable);
@@ -221,60 +224,9 @@ namespace UberClone.Activities
             {
                 LatLng location_driver = new LatLng(location.Latitude, location.Longitude);
                 LatLng location_client = new LatLng(marker_request.requester_latitude, marker_request.requester_longitude);
-
-                myPolyLineOptions = new PolylineOptions();
-                string a_latitude = Convert.ToString(location_driver.Latitude);
-                string a_logitude = Convert.ToString(location_driver.Longitude);
-                string b_latitude = Convert.ToString(location_client.Latitude);
-                string b_longitude = Convert.ToString(location_client.Longitude);
-                string url = "https://maps.googleapis.com/maps/api/directions/json"
-                    + "?origin=" + a_latitude + "," + a_logitude
-                    + "&destination=" + b_latitude + "," + b_longitude;
-
-                result_directions = await RestHelper.APIRequest<Direction>(url, HttpVerbs.GET);
-
-                if (!result_directions.Item2)
-                {
-                    Toast.MakeText(this, "Error_Directions_No_Response :(", ToastLength.Short).Show();
-                    Android.Util.Log.Info("Lift_API", "Error_Directions_No_Response");
-                    e.Handled = false;
-                }
-                if (result_directions.Item2)
-                {
-                    if (result_directions.Item1.status == "NOT_FOUND" || result_directions.Item1.status == "ZERO_RESULTS")
-                    {
-                        Toast.MakeText(this, "No_Directions_Found :(", ToastLength.Short).Show();
-                        Android.Util.Log.Info("Lift_API", "No_Directions_Found");
-                        e.Handled = false;
-                    }
-                    if (result_directions.Item1.status == "OK")
-                    {
-                        List<Route> route = result_directions.Item1.routes.ToList();
-                        if (route.Count > 0)
-                        {
-                            string polylinestring = route[0].overview_polyline.points;
-                            if (!string.IsNullOrEmpty(polylinestring))
-                            {
-                                List<LatLng> list_location = PolyLineHelper.DecodePolylinePoints(polylinestring);
-                                if (list_location.Count > 0)
-                                {
-                                    foreach (LatLng loc in list_location)
-                                    {
-                                        myPolyLineOptions = myPolyLineOptions.Add(loc);
-                                    }
-
-                                    Polyline myLine = mMap.AddPolyline(myPolyLineOptions);
-                                    myLine.Width = 20;
-                                    myLine.Color = Color.ParseColor("#0099ff");
-                                }
-                            }
-                        }
-                        ShowDialogRequestDecision();
-                        e.Handled = true;
-                    }
-                }
-
+                DrawPolyline(location_driver, location_client,mMap);
                
+                e.Handled = true;
             }
             else
             {
@@ -282,6 +234,53 @@ namespace UberClone.Activities
                 e.Handled = false;
             }
         }
+        public async void DrawPolyline(LatLng driver, LatLng rider, GoogleMap googleMap)
+        {
+
+
+            using (HttpClient client = new HttpClient())
+            {
+                myPolyLineOptions = new PolylineOptions();
+
+                string a_latitude = Convert.ToString(driver.Latitude);
+                string a_logitude = Convert.ToString(driver.Longitude);
+                string b_latitude = Convert.ToString(rider.Latitude);
+                string b_longitude = Convert.ToString(rider.Longitude);
+                string url = "https://maps.googleapis.com/maps/api/directions/json"
+                    + "?origin=" + a_latitude + "," + a_logitude
+                    + "&destination=" + b_latitude + "," + b_longitude;
+
+                HttpResponseMessage response = await client.GetAsync(url);
+                string res = await response.Content.ReadAsStringAsync();
+                Direction result_directions = JsonConvert.DeserializeObject<Direction>(res);
+
+                if (result_directions.status == "OK")
+                {
+                    List<Route> route = result_directions.routes.ToList();
+
+                    string polylinestring = route[0].overview_polyline.points;
+
+                    List<LatLng> list_location = PolyLineHelper.DecodePolylinePoints(polylinestring);
+
+                    foreach (LatLng loc in list_location)
+                    {
+                        myPolyLineOptions = myPolyLineOptions.Add(loc);
+                    }
+                    googleMap.AddPolyline(myPolyLineOptions);
+                }
+                else
+                {
+                    Toast.MakeText(this, result_directions.status, ToastLength.Long);
+                    Android.Util.Log.Info("Lift_Location", result_directions.status);
+                }
+
+            }
+        }
+
+        
+
+        
+
 
         public void OnLocationChanged(Location location)
         {
@@ -319,7 +318,7 @@ namespace UberClone.Activities
         {
             try
             {
-                
+
                 //Inflate dialog layout
                 View view = LayoutInflater.Inflate(Resource.Layout.Layout_Activity_Dialog_ActivityRequests, null);
                 Android.App.AlertDialog builder = new Android.App.AlertDialog.Builder(this).Create();
@@ -343,7 +342,7 @@ namespace UberClone.Activities
 
                 textview_distance.Text = result_directions.Item1.routes[0].legs[0].distance.text;
                 textview_estimatedtime.Text = result_directions.Item1.routes[0].legs[0].duration.text;
-                
+
 
                 //show dialog
                 builder.Show();
@@ -353,12 +352,12 @@ namespace UberClone.Activities
                 };
                 button_declinerequest.Touch += delegate
                 {
-                    
+
                     builder.Dismiss();
                     myHandler.PostDelayed(myRunnable, 0);
                 };
 
-               
+
             }
             catch (System.Exception ex)
             {
@@ -366,6 +365,6 @@ namespace UberClone.Activities
                 Toast.MakeText(this, ex.InnerException.Message, ToastLength.Long).Show();
             }
         }
-        
+
     }
 }
